@@ -5,38 +5,45 @@
  */
 #include "scheduler_Schedule.h"
 
+#include <utility/LockGuard.h>
 
 namespace scheduler {
 
-Schedule
+template <typename State>
+Schedule<State>
 	::Schedule()
   :  tasklist_()
   ,  spin_(tasklist_.begin())
 { }
 
-
-Schedule
+template <typename State>
+Schedule<State>
 	::~Schedule()   // is virtual
 {
-  for (Tasklist::iterator iter (tasklist_.begin());  iter != tasklist_.end();  ++iter)
+  typedef typename Tasklist::iterator Iter;
+
+  for (Iter iter (tasklist_.begin())
+      ;     iter != tasklist_.end()
+      ;   ++iter )
   {
     delete (*iter);   // members executable_ and (if present) condition_ are deleted in a Task destructor.
   }
 }
 
 
+template <typename State>
 void
-Schedule
-	::insert(Task* task)
+Schedule<State>
+	::insert(Task<State>* task)
 {
-  Lock lock(Lock::ScheduleModifications());
+  LockGuard lock(_mutex);
 
   tasklist_.insert(tasklist_.begin(), task);
 }
 
-
-Task*
-Schedule
+template <typename State>
+Task<State>*
+Schedule<State>
 	::get_executable_Task()
 {
   // assumption here: tasklist_ is not modified concurrently when getExecutable() is called
@@ -48,16 +55,19 @@ Schedule
 
   while(true)
   {
-    Task* task_in_use;
+    Task<State>* task_in_use;
     {
-      Lock lock(Lock::ScheduleModifications());
+      LockGuard lock(_mutex);
 
       if ( tasklist_.end() == spin_ )
       {
         spin_ = tasklist_.begin();
       }
       // here: spin_ is a valid, nonsingular iterator.
-      Tasklist::iterator const old_spin(spin_);
+
+      typedef typename Tasklist::iterator Iter;
+
+      Iter const old_spin(spin_);
 
       do
       {
@@ -66,16 +76,16 @@ Schedule
         {
           spin_ = tasklist_.begin();
         }
-      } while (   ((*spin_)->status() != Task::FREE)
+      } while (   ((*spin_)->status() != Task<State>::FREE)
                && (spin_ != old_spin)             );
 
-      if ((*spin_)->status() != Task::FREE)
+      if ((*spin_)->status() != Task<State>::FREE)
       {
         // no Task with status FREE could be found, so all of them are IN_USE or FINISHED.
         return 0;
       }
 
-      (*spin_)->status() = Task::IN_USE;
+      (*spin_)->status() = Task<State>::IN_USE;
       task_in_use = *spin_;
       // lock goes out of scope here
     }
@@ -86,8 +96,9 @@ Schedule
     }
     else
     {
-      task_in_use->status() = ( task_in_use->finished()  ?  Task::FINISHED
-                                                         :  Task::FREE    );
+      task_in_use->status() = ( task_in_use->finished()
+                              ? Task<State>::FINISHED
+                              : Task<State>::FREE );
       // loop on, try again in the next loop
     }
 

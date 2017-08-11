@@ -8,7 +8,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
 set (GTEST_ROOT "/opt/google/test")
 
 add_subdirectory (src)
-#add_subdirectory (examples)
+add_subdirectory (examples)
 if (Test)
 #  add_subdirectory (tests)
 endif (Test)  

@@ -6,55 +6,59 @@
 #ifndef SCHEDULER_TASK_H
 #define SCHEDULER_TASK_H 1
 
-#include "scheduler_TimeDirection.h"
 #include "scheduler_PreCondition.h"
 #include "scheduler_Executable.h"
 #include "scheduler_PostCondition.h"
 
+#include "scheduler_TaskDef.h"
+
 namespace scheduler {
 
 
-class Task
+template <typename State = int>
+class Task : public TaskDef<State>
 {
     public:
+
       enum Status {FREE, IN_USE, FINISHED};
 
     public:
-      Task( int t_first_par
-          , int t_final_par
-          , TimeDirection::Type time_direction_par
-          , PreCondition const* pre_condition_par
-          , ExecutableList* executable_list_par
-          , PostCondition const* post_condition_par = NULL
+      Task( State const & initialState
+          , State const & finalState
+//          , PreCondition<State> const* pre_condition_par
+//          , ExecutableList<State>* executable_list_par
+//          , PostCondition<State> const* post_condition_par = NULL
           )
-        : timestamp_(t_first_par)
-        , t_final_(t_final_par)
-        , nr_timesteps_((t_final_ - timestamp_) * time_direction_par)
-        , time_direction_(time_direction_par)
+        : TaskDef<State>()
+        , state_(initialState)
+        , final_(finalState)
         , status_(FREE)
-        , pre_condition_(pre_condition_par)
-        , executable_list_(executable_list_par)
-        , post_condition_(post_condition_par)
+        , pre_condition_
+            (TaskDef<State>::pre_conditions_)
+        , executable_
+            (TaskDef<State>::executables_)
+        , post_condition_
+            (TaskDef<State>::post_conditions_)
+//        , pre_condition_(pre_condition_par)
+//        , executable_(executable_list_par)
+//        , post_condition_(post_condition_par)
       {  }
 
-      Task( int t_first_par
-    	  , int t_final_par
-    	  , TimeDirection::Type time_direction_par
-          , PreCondition const* pre_condition_par
-          , Executable* executable_par
-          , PostCondition const* post_condition_par = NULL
-          )
-        : timestamp_(t_first_par)
-        , t_final_(t_final_par)
-        , nr_timesteps_((t_final_ - timestamp_) * time_direction_par)
-        , time_direction_(time_direction_par)
-        , status_(FREE)
-        , pre_condition_(pre_condition_par)
-        , executable_list_(new ExecutableList)
-        , post_condition_(post_condition_par)
-      {
-        executable_list_->insert(executable_par);
-      }
+//      Task( State const & initialState
+//          , State const & finalState
+//          , PreCondition<State> const* pre_condition_par
+//          , Executable<State>* executable_par
+//          , PostCondition<State> const* post_condition_par = NULL
+//          )
+//        : state_(initialState)
+//        , final_(finalState)
+//        , status_(FREE)
+//        , pre_condition_(pre_condition_par)
+//        , executable_(new ExecutableList<State>)
+//        , post_condition_(post_condition_par)
+//      {
+//        executable_list_->insert(executable_par);
+//      }
 
       ~Task()
       {
@@ -63,7 +67,7 @@ class Task
           delete pre_condition_;
         }
 
-        delete executable_list_;
+        delete executable_;
 
         if (post_condition_)
         {
@@ -73,72 +77,85 @@ class Task
 
       void execute(/*std::vector<RTM::Timer>& thread_timers*/)
       {
-        executable_list_->execute(timestamp_, time_direction_/*, thread_timers*/);
+        executable_->execute(state_);
         if( post_condition_ )
         {
-        	post_condition_->set(timestamp_, time_direction_);
+        	post_condition_->set(state_);
         }
-        timestamp_ += time_direction_;
+//        ++state_;
+
         status_ = (  finished()  ?  FINISHED
                                  : FREE      );
       }
 
-      bool ready_to_execute() const
+      bool
+      ready_to_execute() const
       {
-        return (    (!pre_condition_)
-                 || (pre_condition_->check(timestamp_, time_direction_)) );
+        return ( not(pre_condition_) ||
+                 (pre_condition_->check(state_)) );
       }
 
-      int timestamp() const
+      State &
+      state()
       {
-        return timestamp_;
+        return state_;
       }
 
-      TimeDirection::Type time_direction() const
+      State const &
+      state() const
       {
-        return time_direction_;
+        return state_;
       }
 
-      bool finished() const
+      bool
+      finished() const
       {
-        return (   (time_direction_ * timestamp_)
-                >= (time_direction_ * t_final_)    );
+        return (   state_
+                >= final_ );
       }
 
-      Status status() const
+      Status
+      status
+        () const
       {
         return status_;
       }
 
-      Status& status()
+      Status&
+      status
+        ()
       {
         return status_;
       }
 
-      PreCondition const* pre_condition() const
+      PreCondition<State> &
+      pre_condition()
       {
-        return pre_condition_;
+        return *pre_condition_;
       }
 
-      ExecutableList* executable_list()
+      Executable<State> &
+      executable()
       {
-        return executable_list_;
+        return *executable_;
       }
 
-      PostCondition const* post_condition() const
+      PostCondition<State> &
+      post_condition()
       {
-    	  return post_condition_;
+    	  return *post_condition_;
       }
 
     private:
-      int timestamp_;
-      int const t_final_;
-      int const nr_timesteps_;
-      TimeDirection::Type const time_direction_;
+
+      State state_;
+      State final_;
+
       Status status_;
-      PreCondition const* pre_condition_;
-      ExecutableList* executable_list_;
-      PostCondition const* post_condition_;
+
+      PreCondition<State>  * pre_condition_;
+      Executable<State>    * executable_;
+      PostCondition<State> * post_condition_;
 };
 
 

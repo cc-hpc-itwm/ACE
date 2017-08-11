@@ -6,32 +6,36 @@
 #ifndef SCHEDULER_POSTCONDITION_H
 #define SCHEDULER_POSTCONDITION_H 1
 
-#include "scheduler_TimeDirection.h"
+#include "scheduler_State.h"
 
 #include <vector>
 
 
 namespace scheduler {
 
+template <typename State>
 class PostCondition
 {
     public:
       virtual void
-      set(int timestamp, TimeDirection::Type time_direction) const = 0;
+      set(State const &) = 0;
 };
 
-class PostConditionList : public PostCondition
+template <typename State>
+class PostConditionList
+    : public PostCondition<State>
 {
     public:
       PostConditionList()
         {  }
 
-      void insert(PostCondition const* condition)
+      void insert(PostCondition<State> * condition)
       {
         conditions_.push_back(condition);
       }
 
-      virtual ~PostConditionList()
+      virtual
+      ~PostConditionList()
       {
         for (size_t i(0); i < conditions_.size(); ++i)
         {
@@ -39,12 +43,13 @@ class PostConditionList : public PostCondition
         }
       }
 
-      virtual void set(int timestamp, TimeDirection::Type time_direction) const
+      virtual void
+      set(State const & state)
       {
         // no short-circuit, each condition is checked!
         for (size_t i(0); i < conditions_.size(); ++i)
         {
-          conditions_[i]->set(timestamp, time_direction);
+          conditions_[i]->set(state);
         }
       }
 
@@ -53,7 +58,7 @@ class PostConditionList : public PostCondition
       PostConditionList (PostConditionList const&);
       PostConditionList& operator=(PostConditionList const&);
 
-      std::vector<PostCondition const*> conditions_;
+      std::vector<PostCondition<State> *> conditions_;
 };
 
 }   // namespace scheduler

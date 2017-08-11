@@ -6,48 +6,63 @@
 #ifndef SCHEDULER_PRECONDITION_H
 #define SCHEDULER_PRECONDITION_H 1
 
-#include "scheduler_TimeDirection.h"
+#include "scheduler_State.h"
 
 #include <vector>
 #include <cstring>
 
 namespace scheduler {
 
+template <typename State>
 class PreCondition
 {
-    public:
-      virtual bool check(int timestamp, TimeDirection::Type time_direction) const = 0;
+
+  public:
+
+    virtual bool
+    check
+      ( State const &) const = 0;
+
 };
 
-class PreConditionList : public PreCondition
+template <typename State>
+class PreConditionList : public PreCondition<State>
 {
     public:
-      PreConditionList()
-        {  }
 
-      void insert(PreCondition const* condition)
+      PreConditionList()
+      {  }
+
+      void
+      insert
+        (PreCondition<State> const* condition)
       {
         conditions_.push_back(condition);
       }
 
-      virtual ~PreConditionList()
+      virtual
+      ~PreConditionList()
       {
-        for (size_t i(0); i < conditions_.size(); ++i)
+        for (size_t i(0)
+            ;       i < conditions_.size()
+            ;     ++i )
         {
           delete conditions_[i];
         }
       }
 
       virtual bool
-      check( int timestamp
-           , TimeDirection::Type time_direction) const
+      check
+        ( State const & state) const
       {
         // no short-circuit, each condition is checked!
         bool retval(true);
 
-        for (size_t i(0); i < conditions_.size(); ++i)
+        for (size_t i(0)
+            ;       i < conditions_.size()
+            ; ++i)
         {
-          if (! conditions_[i]->check(timestamp, time_direction) )
+          if (! conditions_[i]->check(state) )
           {
             retval = false;
           }
@@ -61,7 +76,7 @@ class PreConditionList : public PreCondition
       PreConditionList (PreConditionList const&);
       PreConditionList& operator=(PreConditionList const&);
 
-      std::vector<PreCondition const*> conditions_;
+      std::vector<PreCondition<State> const*> conditions_;
 };
 
 }   // namespace scheduler

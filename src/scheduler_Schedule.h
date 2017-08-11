@@ -6,8 +6,8 @@
 #ifndef SCHEDULER_SCHEDULE_H
 #define SCHEDULER_SCHEDULE_H 1
 
-#include "Lock.h"
 #include "scheduler_Task.h"
+#include <Thread.h>
 
 #include <list>
 
@@ -34,6 +34,7 @@ namespace scheduler {
  * \note It is advisable to separate the schedule's construction and execution phase: First,
  *       insert all tasks; then, run the schedule.
  */
+template <typename State>
 class Schedule
 {
 	public:
@@ -47,10 +48,13 @@ class Schedule
       Schedule();
 
       /** \brief cleanup all tasks in the schedule, including conditions and executables */
-      virtual ~Schedule();
+      virtual
+      ~Schedule();
 
       /** \brief insert another work package into the schedule */
-      void insert(Task* task /*, Priority::Type priority = Priority::LOW*/ );
+      void
+      insert
+        (Task<State>* task /*, Priority::Type priority = Priority::LOW*/ );
 
       /** \brief retrieve an executable task
        *
@@ -63,19 +67,22 @@ class Schedule
        *       one of the conditions changes to \b true .
        * \todo Why should the full Task* be returned? Return an Executable* instead?
        */
-      Task* get_executable_Task();
+      Task<State> *
+      get_executable_Task();
 
     private:
-      typedef std::list<Task*>  Tasklist;
+      typedef std::list<Task<State>*>  Tasklist;
 
     private:
+
       Tasklist tasklist_;
-      Tasklist::iterator spin_;
+      typename Tasklist::iterator spin_;
 
+      thread::Mutex _mutex;
 };
-
 
 }   // namespace scheduler
 
+#include <scheduler_Schedule.cpp>
 
 #endif    // SCHEDULER_SCHEDULE_H

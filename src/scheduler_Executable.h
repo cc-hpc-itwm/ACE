@@ -6,7 +6,7 @@
 #ifndef SCHEDULER_EXECUTABLE_H
 #define SCHEDULER_EXECUTABLE_H 1
 
-#include "scheduler_TimeDirection.h"
+#include "scheduler_State.h"
 //#include "Timer.h"
 
 #include <vector>
@@ -14,25 +14,24 @@
 
 namespace scheduler {
 
-
+template <typename State>
 class Executable
 {
     public:
-      virtual void execute( int timestamp, TimeDirection::Type time_direction ) = 0;
+      virtual void execute( State const & ) = 0;
       virtual ~Executable()
       {  }
-
-      virtual unsigned int timer_ID() const = 0;
 };
 
 
-class ExecutableList
+template <typename State>
+class ExecutableList : public Executable<State>
 {
     public:
       ExecutableList()
       {  }
 
-      void insert(Executable* executable)
+      void insert(Executable<State>* executable)
       {
         executables_.push_back(executable);
       }
@@ -45,7 +44,7 @@ class ExecutableList
         }
       }
 
-      void execute( int timestamp, TimeDirection::Type time_direction
+      virtual void execute( State const & state
              /*     , std::vector<RTM::Timer>& thread_timers */)
       {
         for (size_t i(0); i < executables_.size(); ++i)
@@ -56,7 +55,7 @@ class ExecutableList
 //            thread_timers[timer_ID].start();
 //          }
 
-          executables_[i]->execute(timestamp, time_direction);
+          executables_[i]->execute(state);
 
 //          if (timer_ID < thread_timers.size())
 //          {
@@ -70,7 +69,7 @@ class ExecutableList
       ExecutableList(ExecutableList const&);
       ExecutableList& operator=(ExecutableList const&);
 
-      std::vector<Executable*> executables_;
+      std::vector<Executable<State>*> executables_;
 };
 
 
