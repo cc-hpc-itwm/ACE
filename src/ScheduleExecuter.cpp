@@ -20,6 +20,7 @@
  */
 
 #include "ScheduleExecuter.h"
+#include <limits>
 
 namespace scheduler
 {
@@ -31,6 +32,9 @@ ScheduleExecuter<State>
    , ThreadPool & pool)
 : _schedule(schedule)
 , _pool(pool)
+, _totalRunTimer(_pool.numThreads())
+, _spinLockTimer(_pool.numThreads())
+, _executerTimer(_pool.numThreads())
 {}
 
 template <typename State>
@@ -48,19 +52,86 @@ ScheduleExecuter<State>
   }
 
   _pool.waitAll();
+
+  double const max(std::numeric_limits<double>::max());
+  double min_spinLock(+max); double min_totalRun(+max); double min_executer(+max);
+  double max_spinLock(-max); double max_totalRun(-max); double max_executer(-max);
+  double avg_spinLock(0.)  ; double avg_totalRun(0.);   double avg_executer(0.);
+
+  for(int tid ( 0 )
+     ;    tid < _pool.numThreads()
+     ;  ++tid ) {
+    double const thread_spinLock(_spinLockTimer[tid].elapsedTime());
+    double const thread_executer(_executerTimer[tid].elapsedTime());
+    double const thread_totalRun(_totalRunTimer[tid].elapsedTime());
+
+    min_spinLock = std::min(min_spinLock,thread_spinLock);
+    max_spinLock = std::max(max_spinLock,thread_spinLock);
+    avg_spinLock += thread_spinLock / static_cast<double>(_pool.numThreads());
+
+    min_executer = std::min(min_executer,thread_executer);
+    max_executer = std::max(max_executer,thread_executer);
+    avg_executer += thread_executer / static_cast<double>(_pool.numThreads());
+
+    min_totalRun = std::min(min_totalRun,thread_totalRun);
+    max_totalRun = std::max(max_totalRun,thread_totalRun);
+    avg_totalRun += thread_totalRun / static_cast<double>(_pool.numThreads());
+  }
+
+  std::cout << "schedule execution statistics:" << std::endl;
+  std::cout << "\ttotal run time : "
+            << avg_totalRun
+            << " ["
+            << min_totalRun
+            << ", "
+            << max_totalRun
+            << "]"
+            << std::endl;
+
+  std::cout << "\texecuter time : "
+            << avg_executer
+            << " ["
+            << min_executer
+            << ", "
+            << max_executer
+            << "]"
+            << std::endl;
+
+  std::cout << "\tspin lock time : "
+            << avg_spinLock
+            << " ["
+            << min_spinLock
+            << ", "
+            << max_spinLock
+            << "]"
+            << std::endl;
+  std::cout << std::endl;
+
 }
 
 template <typename State>
 void
 ScheduleExecuter<State>
   ::execute
-   ( int /*tid*/
+   ( int tid
    , void * arg ) {
 
   Schedule<State> & schedule
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_schedule );
 
+  Timer & totalRunTimer
+    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_totalRunTimer[tid] );
+
+  Timer & executerTimer
+    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_executerTimer[tid] );
+
+  Timer & spinLockTimer
+    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_spinLockTimer[tid] );
+
   bool finished(false);
+
+  totalRunTimer.start();
+  spinLockTimer.start();
 
   while (!finished)
   {
@@ -68,13 +139,19 @@ ScheduleExecuter<State>
 
     if ( task )
     {
+      spinLockTimer.stop();
+      executerTimer.start();
       task->execute();
+      executerTimer.stop();
+      spinLockTimer.start();
     }
     else
     {
       finished = true;
     }
   }
+  spinLockTimer.stop();
+  totalRunTimer.stop();
 }
 
 } /* namespace scheduler */

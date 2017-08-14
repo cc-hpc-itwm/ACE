@@ -27,13 +27,13 @@ class PreCondition
     virtual bool
     check(int const & state) const {
 
-      std::stringstream ss;
-
-      ss << "pre-cond check of " << _name << ": ";
-      ss << state;
-      ss << " -> (" << _lState << "," << _rState << ")";
-
-      std::cout << ss.str() << std::endl;
+//      std::stringstream ss;
+//
+//      ss << "pre-cond check of " << _name << ": ";
+//      ss << state;
+//      ss << " -> (" << _lState << "," << _rState << ")";
+//
+//      std::cout << ss.str() << std::endl;
 
       return ( ( state <= _lState ) &&
                ( state <= _rState ) );
@@ -66,11 +66,11 @@ class PostCondition
     set(int const & state) {
        std::stringstream ss;
 
-       ss << "post-cond set of " << _name << ": ";
-       ss << _state;
+//       ss << "post-cond set of " << _name << ": ";
+//       ss << _state;
       _state = state+1;
-       ss << " -> " << _state;
-       std::cout << ss.str() << std::endl;
+//       ss << " -> " << _state;
+//       std::cout << ss.str() << std::endl;
     }
 
   private:
@@ -88,6 +88,7 @@ class Executable
       (std::string const & name)
     : _name(name)
     , _var (0)
+    , _time()
     {}
 
     virtual
@@ -96,17 +97,21 @@ class Executable
                       << _name
                       << ": "
                       << _var
+                      << ", time = "
+                      << _time.elapsedTime()
                       << std::endl;
     }
 
     virtual void
     execute(int const & state) {
-      std::cout << "execute of "
-                << _name
-                << ": "
-                << state
-                << std::endl;
+//      std::cout << "execute of "
+//                << _name
+//                << ": "
+//                << state
+//                << std::endl;
+      _time.start();
       _var+=1;
+      _time.stop();
     }
 
   private:
@@ -114,6 +119,7 @@ class Executable
     std::string const _name;
 
     int _var;
+    scheduler::Timer _time;
 
 };
 
@@ -130,12 +136,12 @@ main
   using Executer = scheduler::ScheduleExecuter<State>;
   using ThreadPool = scheduler::ThreadPool;
 
-  ThreadPool threadPool(10);
+  ThreadPool threadPool(3);
 
   Schedule schedule;
   {
     State initialState(0);
-    State finalState(10);
+    State finalState(1000);
 
     int const nTask(10);
     std::vector<Task*> taskList(nTask);
@@ -185,5 +191,19 @@ main
 
   Executer( schedule
           , threadPool ).execute();
+
+  scheduler::Timer singleTimer;
+
+  double val(0.);
+
+  singleTimer.start();
+  for(int iTask(0);iTask<10;++iTask) {
+    for(int iState(0);iState<1000;++iState) {
+      val +=1;
+    }
+  }
+  singleTimer.stop();
+
+  std::cout << "total run time : " << singleTimer.elapsedTime() << std::endl;
 
 }

@@ -75,13 +75,12 @@ class Task : public TaskDef<State>
         }
       }
 
-      void execute(/*std::vector<RTM::Timer>& thread_timers*/)
-      {
+      void execute() {
         executable_->execute(state_);
-        if( post_condition_ )
-        {
+        if( post_condition_ ) {
         	post_condition_->set(state_);
         }
+
 //        ++state_;
 
         status_ = (  finished()  ?  FINISHED
@@ -108,8 +107,7 @@ class Task : public TaskDef<State>
       }
 
       bool
-      finished() const
-      {
+      finished() const {
         return (   state_
                 >= final_ );
       }
@@ -123,14 +121,12 @@ class Task : public TaskDef<State>
 
       Status&
       status
-        ()
-      {
+        () {
         return status_;
       }
 
       PreCondition<State> &
-      pre_condition()
-      {
+      pre_condition() {
         return *pre_condition_;
       }
 

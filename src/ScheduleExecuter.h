@@ -24,6 +24,8 @@
 
 #include <scheduler_Schedule.h>
 #include <ThreadPool.hpp>
+#include <Timer.hpp>
+#include <vector>
 
 namespace scheduler {
 
@@ -52,6 +54,10 @@ class ScheduleExecuter
 
     Schedule<State> & _schedule;
     ThreadPool & _pool;
+
+    std::vector<Timer> _totalRunTimer;
+    std::vector<Timer> _spinLockTimer;
+    std::vector<Timer> _executerTimer;
 };
 
 } /* namespace scheduler */
