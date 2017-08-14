@@ -2,10 +2,10 @@
 # The extension is already found. Any number of sources could be listed here.
 add_library ( ACE 
 #	      scheduler_Schedule.cpp
-	      scheduler_Table.cpp
+#	      scheduler_Table.cpp
 #	      scheduler_Thread.cpp
 #	      scheduler_Threading.cpp
-	      scheduler_Timers.cpp
+#	      scheduler_Timers.cpp
 #	      ScheduleExecuter.cpp
 	      Thread.cpp
 	      ThreadPool.cpp
