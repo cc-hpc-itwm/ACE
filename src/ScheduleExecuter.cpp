@@ -35,6 +35,7 @@ ScheduleExecuter<State>
 , _totalRunTimer(_pool.numThreads())
 , _spinLockTimer(_pool.numThreads())
 , _executerTimer(_pool.numThreads())
+, _postCondTimer(_pool.numThreads())
 {}
 
 template <typename State>
@@ -54,20 +55,30 @@ ScheduleExecuter<State>
   _pool.waitAll();
 
   double const max(std::numeric_limits<double>::max());
-  double min_spinLock(+max); double min_totalRun(+max); double min_executer(+max);
-  double max_spinLock(-max); double max_totalRun(-max); double max_executer(-max);
-  double avg_spinLock(0.)  ; double avg_totalRun(0.);   double avg_executer(0.);
+  double min_spinLock(+max); double min_totalRun(+max);
+  double min_executer(+max); double min_postCond(+max);
+
+  double max_spinLock(-max); double max_totalRun(-max);
+  double max_executer(-max); double max_postCond(-max);
+
+  double avg_spinLock(0.); double avg_totalRun(0.);
+  double avg_executer(0.); double avg_postCond(0.);
 
   for(int tid ( 0 )
      ;    tid < _pool.numThreads()
      ;  ++tid ) {
     double const thread_spinLock(_spinLockTimer[tid].elapsedTime());
     double const thread_executer(_executerTimer[tid].elapsedTime());
+    double const thread_postCond(_postCondTimer[tid].elapsedTime());
     double const thread_totalRun(_totalRunTimer[tid].elapsedTime());
 
     min_spinLock = std::min(min_spinLock,thread_spinLock);
     max_spinLock = std::max(max_spinLock,thread_spinLock);
     avg_spinLock += thread_spinLock / static_cast<double>(_pool.numThreads());
+
+    min_postCond = std::min(min_postCond,thread_postCond);
+    max_postCond = std::max(max_postCond,thread_postCond);
+    avg_postCond += thread_postCond / static_cast<double>(_pool.numThreads());
 
     min_executer = std::min(min_executer,thread_executer);
     max_executer = std::max(max_executer,thread_executer);
@@ -94,6 +105,15 @@ ScheduleExecuter<State>
             << min_executer
             << ", "
             << max_executer
+            << "]"
+            << std::endl;
+
+  std::cout << "\tpostCond time : "
+            << avg_postCond
+            << " ["
+            << min_postCond
+            << ", "
+            << max_postCond
             << "]"
             << std::endl;
 
@@ -125,6 +145,9 @@ ScheduleExecuter<State>
   Timer & executerTimer
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_executerTimer[tid] );
 
+  Timer & postCondTimer
+    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_postCondTimer[tid] );
+
   Timer & spinLockTimer
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_spinLockTimer[tid] );
 
@@ -143,6 +166,9 @@ ScheduleExecuter<State>
       executerTimer.start();
       task->execute();
       executerTimer.stop();
+      postCondTimer.start();
+      task->setPostCondition();
+      postCondTimer.stop();
       spinLockTimer.start();
     }
     else

@@ -60,7 +60,7 @@ namespace scheduler {
     //! The number of threads in the pool
     const int _numThreads;
     //! The thread handles
-    std::auto_ptr<Thread> *_threads;
+    std::unique_ptr<Thread> *_threads;
     //! A barrier that is used to synchronize all threads
     //! via the barrier() method
     thread::Barrier _barrier;

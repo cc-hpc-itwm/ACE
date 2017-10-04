@@ -12,6 +12,8 @@
 #include "scheduler_Executable.h"
 #include "scheduler_PostCondition.h"
 
+#include <memory>
+
 namespace scheduler {
 
 template <typename State>
@@ -22,88 +24,126 @@ class TaskDef
 
 		TaskDef
 		  ()
-		: pre_conditions_ ( new PreConditionList<State> )
-		, executables_    ( new ExecutableList<State> )
-		, post_conditions_( new PostConditionList<State> )
+		: pre_conditions_ ()
+		, executables_    ()
+		, post_conditions_()
 		{}
-
-//		TaskDef
-//		  ( PreCondition<State> const* pre_condition_par
-//		  , ExecutableList<State>* executable_list_par
-//		  , PostCondition<State> const* post_condition_par )
-//		: pre_conditions_(pre_condition_par)
-//	    , executables_(executable_list_par)
-//	    , post_conditions_(post_condition_par)
-//		{  }
 
 		~TaskDef() {};
 
 		// insert a pre-condition
 		void
 		insert
-		  ( PreCondition<State> * const pPreCondition )
+		  ( std::unique_ptr<PreCondition<State> > preCondition )
 		{
-			if(pPreCondition != NULL )
-			{
+			if(static_cast<bool>(preCondition)) {
 
-				if( pre_conditions_ == NULL )
-				{
-					pre_conditions_ = new PreConditionList<State>;
+				if(!static_cast<bool>(pre_conditions_)) {
+					pre_conditions_.reset( new PreConditionList<State> );
 				}
 
-				pre_conditions_->insert( pPreCondition );
-
+				pre_conditions_->insert( std::move(preCondition) );
 			}
 		}
+
+		bool
+		hasPreCondition
+		  () const {
+		  return static_cast<bool>(pre_conditions_);
+		}
+
+		inline PreCondition<State> const &
+        getPreCondition
+          () const {
+          return *pre_conditions_;
+        }
+
+        inline PreCondition<State> &
+        getPreCondition
+          () {
+          return *pre_conditions_;
+        }
 
 		// insert an executable
 		void
 		insert
-		  ( Executable<State> * const pExecutable )
+		  ( std::unique_ptr<Executable<State> > executable )
 		{
-			if(pExecutable != NULL )
-			{
+			if(static_cast<bool>(executable)) {
 
-				if( executables_ == NULL )
-				{
-					executables_ = new ExecutableList<State>;
+				if( !static_cast<bool>(executables_) ) {
+					executables_.reset(new ExecutableList<State>);
 				}
 
-				executables_->insert( pExecutable );
-
+				executables_->insert( std::move(executable) );
 			}
 		}
 
+		bool
+        hasExecutable
+          () const {
+          return static_cast<bool>(executables_);
+        }
+
+        inline Executable<State> const &
+        getExecutable
+          () const {
+          return *executables_;
+        }
+
+        inline Executable<State> &
+        getExecutable
+          () {
+          return *executables_;
+        }
+
 		// insert a post-condition
 		void
-		insert( PostCondition<State> * const pPostCondition )
-		{
-			if(pPostCondition != NULL )
-			{
+		insert
+		  ( std::unique_ptr<PostCondition<State> > postCondition  ) {
 
-				if( post_conditions_ == NULL )
-				{
-					post_conditions_ = new PostConditionList<State>;
+			if(static_cast<bool>(postCondition)) {
+
+				if( !static_cast<bool>(post_conditions_) ) {
+					post_conditions_.reset(new PostConditionList<State>);
 				}
 
-				post_conditions_->insert( pPostCondition );
+				post_conditions_->insert( std::move(postCondition) );
 
 			}
 		}
 
 		bool
+        hasPostCondition
+          () const {
+          return static_cast<bool>(post_conditions_);
+        }
+
+        inline PostCondition<State> const &
+        getPostCondition
+          () const {
+          return *post_conditions_;
+        }
+
+        inline PostCondition<State> &
+        getPostCondition
+          () {
+          return *post_conditions_;
+        }
+
+		bool
 		empty()
 		{
-		  return ( pre_conditions_  == NULL &&
-		           executables_     == NULL &&
-		           post_conditions_ == NULL );
+		  return ( not(hasPreCondition()) &&
+		           not(hasExecutable())   &&
+		           not(hasPostCondition()) );
 		}
 
 	public:
 
-		PreConditionList<State> * pre_conditions_;
-		ExecutableList<State>   * executables_;
-		PostConditionList<State>* post_conditions_;
+		std::unique_ptr<PreConditionList<State>>  pre_conditions_;
+		std::unique_ptr<ExecutableList<State>>    executables_;
+		std::unique_ptr<PostConditionList<State>> post_conditions_;
 
 };
 

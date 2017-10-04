@@ -81,8 +81,9 @@ Schedule<State>
 
       if ((*spin_)->status() != Task<State>::FREE)
       {
-        // no Task with status FREE could be found, so all of them are IN_USE or FINISHED.
-        return 0;
+        // no Task with status FREE could be found, so all of them are IN_USE
+        // or FINISHED.
+        return nullptr;
       }
 
       (*spin_)->status() = Task<State>::IN_USE;
@@ -103,7 +104,8 @@ Schedule<State>
     }
 
     // usleep(1000);
-    /// \todo something like usleep() could be inserted somewhere if the scheduler goes into a temporary spin lock
+    /// \todo something like usleep() could be inserted somewhere if the
+    ///       scheduler goes into a temporary spin lock
   }
 
 }

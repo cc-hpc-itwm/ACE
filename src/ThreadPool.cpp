@@ -57,7 +57,7 @@ namespace scheduler
   , _barrier(numThreads)
   , _mutex()
   {
-    _threads = new std::auto_ptr<Thread>[_numThreads];
+    _threads = new std::unique_ptr<Thread>[_numThreads];
 
     try {
       std::set<int> coreset;
@@ -106,7 +106,7 @@ namespace scheduler
               break;
           }
         }
-        _threads[i] = std::auto_ptr<Thread>(new Thread( i,core2pin));
+        _threads[i] = std::unique_ptr<Thread>(new Thread( i,core2pin));
       }
 
 //      _allocator = new  memory::AllocatorAlignmentProxy

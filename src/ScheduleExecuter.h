@@ -58,6 +58,7 @@ class ScheduleExecuter
     std::vector<Timer> _totalRunTimer;
     std::vector<Timer> _spinLockTimer;
     std::vector<Timer> _executerTimer;
+    std::vector<Timer> _postCondTimer;
 };
 
 } /* namespace scheduler */

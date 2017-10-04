@@ -8,75 +8,75 @@
 
 #include "scheduler_State.h"
 
+#include <memory>
 #include <vector>
 #include <cstring>
 
 namespace scheduler {
 
 template <typename State>
-class PreCondition
-{
+class PreCondition {
 
   public:
 
+    virtual
+    ~PreCondition
+      () {
+    }
+
     virtual bool
     check
-      ( State const &) const = 0;
+      ( State const & state) const  = 0 ;
 
 };
 
 template <typename State>
-class PreConditionList : public PreCondition<State>
-{
-    public:
+class PreConditionList
+    : public PreCondition<State> {
 
-      PreConditionList()
-      {  }
+  public:
 
-      void
-      insert
-        (PreCondition<State> const* condition)
-      {
-        conditions_.push_back(condition);
-      }
+    using ElementType = std::unique_ptr<PreCondition<State> >;
 
-      virtual
-      ~PreConditionList()
-      {
-        for (size_t i(0)
-            ;       i < conditions_.size()
-            ;     ++i )
-        {
-          delete conditions_[i];
+    PreConditionList() {
+    }
+
+    PreConditionList
+      (PreConditionList const&) = delete;
+
+    virtual
+    ~PreConditionList
+      () {
+    }
+
+    PreConditionList&
+    operator=
+      (PreConditionList const&) = delete;
+
+    void
+    insert
+      (ElementType condition) {
+      conditions_.push_back(std::move(condition));
+    }
+
+    virtual bool
+    check
+      ( State const & state) const {
+      bool retval(true);
+
+      for (auto &i: conditions_) {
+        if (! i->check(state) ) {
+          retval = false;
+          break;
         }
       }
 
-      virtual bool
-      check
-        ( State const & state) const
-      {
-        // no short-circuit, each condition is checked!
-        bool retval(true);
+      return retval;
+    }
 
-        for (size_t i(0)
-            ;       i < conditions_.size()
-            ; ++i)
-        {
-          if (! conditions_[i]->check(state) )
-          {
-            retval = false;
-          }
-        }
+  private:
 
-        return retval;
-      }
-
-    private:
-      // non-copyable:
-      PreConditionList (PreConditionList const&);
-      PreConditionList& operator=(PreConditionList const&);
-
-      std::vector<PreCondition<State> const*> conditions_;
+    std::vector<ElementType> conditions_;
 };
 
 }   // namespace scheduler

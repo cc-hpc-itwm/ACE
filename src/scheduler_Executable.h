@@ -7,71 +7,70 @@
 #define SCHEDULER_EXECUTABLE_H 1
 
 #include "scheduler_State.h"
-//#include "Timer.h"
 
+#include <memory>
 #include <vector>
 
 
 namespace scheduler {
 
 template <typename State>
-class Executable
-{
-    public:
-      virtual void execute( State const & ) = 0;
-      virtual ~Executable()
-      {  }
+class Executable {
+
+public:
+
+  virtual
+  ~Executable() {
+  }
+
+  virtual void
+  execute
+    ( State const & ) = 0;
+
 };
 
 
 template <typename State>
-class ExecutableList : public Executable<State>
-{
-    public:
-      ExecutableList()
-      {  }
+class ExecutableList
+    : public Executable<State> {
 
-      void insert(Executable<State>* executable)
-      {
-        executables_.push_back(executable);
+  public:
+
+    using ElementType = std::unique_ptr<Executable<State> >;
+
+    ExecutableList
+      () {
+    }
+
+    ExecutableList
+      (ExecutableList const&) = delete;
+
+    ExecutableList&
+    operator=
+      (ExecutableList const&) = delete;
+
+    void
+    insert
+      (ElementType executable) {
+      executables_.push_back(std::move(executable));
+    }
+
+    virtual
+    ~ExecutableList
+      () {
+    }
+
+    virtual void
+    execute( State const & state ) {
+      for ( auto &i: executables_) {
+        i->execute(state);
       }
+    }
 
-      virtual ~ExecutableList()
-      {
-        for (size_t i(0); i < executables_.size(); ++i)
-        {
-          delete executables_[i];
-        }
-      }
+  private:
 
-      virtual void execute( State const & state
-             /*     , std::vector<RTM::Timer>& thread_timers */)
-      {
-        for (size_t i(0); i < executables_.size(); ++i)
-        {
-//          unsigned int const timer_ID(executables_[i]->timer_ID());
-//          if (timer_ID < thread_timers.size())
-//          {
-//            thread_timers[timer_ID].start();
-//          }
-
-          executables_[i]->execute(state);
-
-//          if (timer_ID < thread_timers.size())
-//          {
-//            thread_timers[timer_ID].stop();
-//          }
-        }
-      }
-
-    private:
-      // non-copyable:
-      ExecutableList(ExecutableList const&);
-      ExecutableList& operator=(ExecutableList const&);
-
-      std::vector<Executable<State>*> executables_;
+    std::vector<ElementType> executables_;
 };
-
 
 }   // namespace scheduler
 

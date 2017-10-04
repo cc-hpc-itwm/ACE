@@ -38,8 +38,8 @@ public:
   {}
 
   Optional( Optional<T> const & A)
-  : pvalue( A.given ? std::auto_ptr<T>( new T( *A.pvalue ) )
-                    : std::auto_ptr<T>() )
+  : pvalue( A.given ? std::unique_ptr<T>( new T( *A.pvalue ) )
+                    : std::unique_ptr<T>() )
   , given( A.given )
   { }
 
@@ -52,8 +52,8 @@ public:
   Optional&
   operator = (const Optional<T>& A)
   {
-    pvalue = A.given ? std::auto_ptr<T>( new T( *A.pvalue ) )
-                     : std::auto_ptr<T>();
+    pvalue = A.given ? std::unique_ptr<T>( new T( *A.pvalue ) )
+                     : std::unique_ptr<T>();
 
     given = A.given;
 
@@ -63,7 +63,7 @@ public:
   Optional&
   operator = (const T& _v)
   {
-    pvalue = std::auto_ptr<T>( new T( _v ) );
+    pvalue = std::unique_ptr<T>( new T( _v ) );
 
     given = true;
 
@@ -105,7 +105,7 @@ public:
 
 private:
 
-  std::auto_ptr<T> pvalue;
+  std::unique_ptr<T> pvalue;
   bool given;
 };
 

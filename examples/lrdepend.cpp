@@ -64,11 +64,12 @@ class PostCondition
 
     virtual void
     set(int const & state) {
-       std::stringstream ss;
-
+//       std::stringstream ss;
+//
 //       ss << "post-cond set of " << _name << ": ";
 //       ss << _state;
       _state = state+1;
+//       ++_state;
 //       ss << " -> " << _state;
 //       std::cout << ss.str() << std::endl;
     }
@@ -87,7 +88,8 @@ class Executable
     Executable
       (std::string const & name)
     : _name(name)
-    , _var (0)
+    , _pVar( new int [16] )
+    , _var (_pVar[0])
     , _time()
     {}
 
@@ -103,7 +105,51 @@ class Executable
     }
 
     virtual void
-    execute(int const & state) {
+    execute(int const & /*state*/) {
+//      std::cout << "execute of "
+//                << _name
+//                << ": "
+//                << state
+//                << std::endl;
+      _time.start();
+      _var+=1;
+      _time.stop();
+    }
+
+  private:
+
+    std::string const _name;
+
+    std::unique_ptr<int[]> _pVar;
+    int &                  _var;
+    scheduler::Timer       _time;
+
+};
+
+class ExecutableDirect {
+
+  public:
+
+    ExecutableDirect
+      (std::string const & name)
+    : _name(name)
+    , _var (0)
+    , _time()
+    {}
+
+    virtual
+    ~ExecutableDirect() {
+      std::cout << "final result of "
+                      << _name
+                      << ": "
+                      << _var
+                      << ", time = "
+                      << _time.elapsedTime()
+                      << std::endl;
+    }
+
+    inline void
+    execute(int const & /*state*/) {
 //      std::cout << "execute of "
 //                << _name
 //                << ": "
@@ -136,14 +182,15 @@ main
   using Executer = scheduler::ScheduleExecuter<State>;
   using ThreadPool = scheduler::ThreadPool;
 
-  ThreadPool threadPool(3);
+  ThreadPool threadPool(2);
+
+  State initialState(0);
+  State finalState(10000);
+
+  int const nTask(20);
 
   Schedule schedule;
   {
-    State initialState(0);
-    State finalState(1000);
-
-    int const nTask(10);
     std::vector<Task*> taskList(nTask);
 
     for( int iTask(0)
@@ -161,15 +208,15 @@ main
 
       std::stringstream ss; ss << iTask;
 
-      taskList[iTask]->insert(new detail::PreCondition
+      taskList[iTask]->insert( std::move( std::unique_ptr<scheduler::PreCondition<int>>(new detail::PreCondition
                                 ( ss.str()
                                 , taskList[iLeftTask]->state()
-                                , taskList[iRightTask]->state() ) );
-      taskList[iTask]->insert(new detail::Executable
-                                ( ss.str() ) );
-      taskList[iTask]->insert(new detail::PostCondition
+                                , taskList[iRightTask]->state() ) ) ) );
+      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::Executable<int>>(new detail::Executable
+                                ( ss.str() ) ) ) );
+      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::PostCondition<int>>(new detail::PostCondition
                                 ( ss.str()
-                                , taskList[iTask]->state() ) );
+                                , taskList[iTask]->state() ) ) ) );
     }
 
 //    {
@@ -192,18 +239,79 @@ main
   Executer( schedule
           , threadPool ).execute();
 
-  scheduler::Timer singleTimer;
+  {
+    scheduler::Timer singleTimer;
 
-  double val(0.);
+    double val(0.);
 
-  singleTimer.start();
-  for(int iTask(0);iTask<10;++iTask) {
-    for(int iState(0);iState<1000;++iState) {
-      val +=1;
+    singleTimer.start();
+    for(int iTask(0);iTask<nTask;++iTask) {
+      for(int iState(initialState);iState<finalState;++iState) {
+        val +=1;
+      }
     }
-  }
-  singleTimer.stop();
+    singleTimer.stop();
 
-  std::cout << "total run time : " << singleTimer.elapsedTime() << std::endl;
+    std::cout << "total run time : " << singleTimer.elapsedTime() << std::endl;
+  }
+
+  {
+    scheduler::Timer singleTimer;
+
+    int const testState(0);
+
+    singleTimer.start();
+    for(int iTask(0);iTask<nTask;++iTask) {
+
+      detail::Executable executable("virtual executable");
+
+      for(int iState(initialState);iState<finalState;++iState) {
+        executable.execute(testState);
+      }
+    }
+    singleTimer.stop();
+
+    std::cout << "total run time direct virtual: " << singleTimer.elapsedTime() << std::endl;
+  }
+
+  {
+    scheduler::Timer singleTimer;
+
+    int const testState(0);
+
+    singleTimer.start();
+    for(int iTask(0);iTask<nTask;++iTask) {
+
+      detail::Executable executable("virtual base executable");
+
+      scheduler::Executable<int> & baseExecutable(executable);
+
+      for(int iState(initialState);iState<finalState;++iState) {
+        baseExecutable.execute(testState);
+      }
+    }
+    singleTimer.stop();
+
+    std::cout << "total run time direct virtual base: " << singleTimer.elapsedTime() << std::endl;
+  }
+
+  {
+    scheduler::Timer singleTimer;
+
+    int const testState(0);
+
+    singleTimer.start();
+    for(int iTask(0);iTask<nTask;++iTask) {
+
+      detail::ExecutableDirect executable("direct executable");
+
+      for(int iState(initialState);iState<finalState;++iState) {
+        executable.execute(testState);
+      }
+    }
+    singleTimer.stop();
+
+    std::cout << "total run time direct: " << singleTimer.elapsedTime() << std::endl;
+  }
 
 }

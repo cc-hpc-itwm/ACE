@@ -8,6 +8,7 @@
 
 #include "scheduler_State.h"
 
+#include <memory>
 #include <vector>
 
 
@@ -16,49 +17,55 @@ namespace scheduler {
 template <typename State>
 class PostCondition
 {
-    public:
-      virtual void
-      set(State const &) = 0;
+  public:
+
+    virtual
+    ~PostCondition
+      () {
+    }
+
+    virtual void
+    set(State const &) = 0;
 };
 
 template <typename State>
 class PostConditionList
     : public PostCondition<State>
 {
-    public:
-      PostConditionList()
-        {  }
+  public:
 
-      void insert(PostCondition<State> * condition)
-      {
-        conditions_.push_back(condition);
+    using ElementType = std::unique_ptr<PostCondition<State> >;
+
+    PostConditionList
+      () {
+    }
+
+    PostConditionList
+      (PostConditionList const&) = delete;
+
+    virtual
+    ~PostConditionList() {
+    }
+
+    PostConditionList&
+    operator=(PostConditionList const&) = delete;
+
+    void
+    insert
+    (ElementType condition) {
+      conditions_.push_back(std::move(condition));
+    }
+
+    virtual void
+    set(State const & state) {
+      for (auto &i: conditions_) {
+        i->set(state);
       }
+    }
 
-      virtual
-      ~PostConditionList()
-      {
-        for (size_t i(0); i < conditions_.size(); ++i)
-        {
-          delete conditions_[i];
-        }
-      }
+  private:
 
-      virtual void
-      set(State const & state)
-      {
-        // no short-circuit, each condition is checked!
-        for (size_t i(0); i < conditions_.size(); ++i)
-        {
-          conditions_[i]->set(state);
-        }
-      }
-
-    private:
-      // non-copyable:
-      PostConditionList (PostConditionList const&);
-      PostConditionList& operator=(PostConditionList const&);
-
-      std::vector<PostCondition<State> *> conditions_;
+    std::vector<ElementType> conditions_;
 };
 
 }   // namespace scheduler

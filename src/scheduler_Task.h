@@ -12,146 +12,104 @@
 
 #include "scheduler_TaskDef.h"
 
+#include <memory>
+
 namespace scheduler {
 
 
 template <typename State = int>
-class Task : public TaskDef<State>
-{
-    public:
+class Task
+    : public TaskDef<State> {
 
-      enum Status {FREE, IN_USE, FINISHED};
+public:
 
-    public:
-      Task( State const & initialState
-          , State const & finalState
-//          , PreCondition<State> const* pre_condition_par
-//          , ExecutableList<State>* executable_list_par
-//          , PostCondition<State> const* post_condition_par = NULL
-          )
-        : TaskDef<State>()
-        , state_(initialState)
-        , final_(finalState)
-        , status_(FREE)
-        , pre_condition_
-            (TaskDef<State>::pre_conditions_)
-        , executable_
-            (TaskDef<State>::executables_)
-        , post_condition_
-            (TaskDef<State>::post_conditions_)
-//        , pre_condition_(pre_condition_par)
-//        , executable_(executable_list_par)
-//        , post_condition_(post_condition_par)
-      {  }
+  enum Status {FREE, IN_USE, FINISHED};
 
-//      Task( State const & initialState
-//          , State const & finalState
-//          , PreCondition<State> const* pre_condition_par
-//          , Executable<State>* executable_par
-//          , PostCondition<State> const* post_condition_par = NULL
-//          )
-//        : state_(initialState)
-//        , final_(finalState)
-//        , status_(FREE)
-//        , pre_condition_(pre_condition_par)
-//        , executable_(new ExecutableList<State>)
-//        , post_condition_(post_condition_par)
-//      {
-//        executable_list_->insert(executable_par);
-//      }
+  Task
+    ( State const & initialState
+    , State const & finalState )
+  : TaskDef<State>()
+  , pState_( new State[16] )
+  , state_(pState_[0])
+  , pFinal_( new State[16] )
+  , final_(pFinal_[0])
+  , status_(FREE)
+  {
+    state_ = initialState;
+    final_ = finalState;
+  }
 
-      ~Task()
-      {
-        if (pre_condition_)
-        {
-          delete pre_condition_;
-        }
+  ~Task
+    () {
+  }
 
-        delete executable_;
+  inline void
+  execute
+    () {
+    if(TaskDef<State>::hasExecutable()) {
+       TaskDef<State>::getExecutable().execute(state_);
+    }
+  }
 
-        if (post_condition_)
-        {
-        	delete post_condition_;
-        }
-      }
+  inline void
+  setPostCondition() {
+    if( TaskDef<State>::hasPostCondition() ) {
+        TaskDef<State>::getPostCondition().set(state_);
+    }
 
-      void execute() {
-        executable_->execute(state_);
-        if( post_condition_ ) {
-        	post_condition_->set(state_);
-        }
+    status_ = ( finished()
+              ? FINISHED
+              : FREE );
+  }
 
-//        ++state_;
+  inline bool
+  ready_to_execute
+    () const
+  {
+    return ( not(TaskDef<State>::hasPreCondition()) ||
+                (TaskDef<State>::getPreCondition().check(state_)) );
+  }
 
-        status_ = (  finished()  ?  FINISHED
-                                 : FREE      );
-      }
+  inline State &
+  state
+    () {
+    return state_;
+  }
 
-      bool
-      ready_to_execute() const
-      {
-        return ( not(pre_condition_) ||
-                 (pre_condition_->check(state_)) );
-      }
+  inline State const &
+  state
+    () const
+  {
+    return state_;
+  }
 
-      State &
-      state()
-      {
-        return state_;
-      }
+  inline bool
+  finished
+    () const {
+    return (   state_
+            >= final_ );
+  }
 
-      State const &
-      state() const
-      {
-        return state_;
-      }
+  inline Status const &
+  status
+    () const {
+    return status_;
+  }
 
-      bool
-      finished() const {
-        return (   state_
-                >= final_ );
-      }
+  inline Status &
+  status
+    () {
+    return status_;
+  }
 
-      Status
-      status
-        () const
-      {
-        return status_;
-      }
+private:
 
-      Status&
-      status
-        () {
-        return status_;
-      }
+  std::unique_ptr<State[]> pState_;
+  State & state_;
+  std::unique_ptr<State[]> pFinal_;
+  State & final_;
 
-      PreCondition<State> &
-      pre_condition() {
-        return *pre_condition_;
-      }
-
-      Executable<State> &
-      executable()
-      {
-        return *executable_;
-      }
-
-      PostCondition<State> &
-      post_condition()
-      {
-    	  return *post_condition_;
-      }
-
-    private:
-
-      State state_;
-      State final_;
-
-      Status status_;
-
-      PreCondition<State>  * pre_condition_;
-      Executable<State>    * executable_;
-      PostCondition<State> * post_condition_;
+  Status status_;
 };
 
 
