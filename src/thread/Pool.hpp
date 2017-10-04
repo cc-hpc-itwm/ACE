@@ -25,28 +25,11 @@
 #include <memory>
 #include <thread/Barrier.hpp>
 #include <thread/Mutex.hpp>
+#include <thread/PinningMode.hpp>
 #include <thread/Thread.hpp>
 
 namespace ace {
-
-  //! Determines how threads are pinned to CPU cores
-  enum PinningMode
-  {
-    //! Threads are not pinned at all.
-    PIN_NONE,
-    //! Pin thread #i to CPU core #i.
-    PIN_1TO1,
-    //! Pin thread #i to CPU core #i + numThreads.
-    PIN_1TO1_OFFSET,
-    //! Pin thread #i to #i of set cores in inherited affinity mask.
-    PIN_1TO1_INHERITED,
-    //! Pin thread #i to CPU core #2i.
-    PIN_EVEN,
-    //! Pin thread #i to CPU core #2i + 1.
-    PIN_ODD,
-    //! Pin threads according to a custom pattern.
-    PIN_CUSTOM
-  };
+namespace thread {
 
   //! When constructed, the thread pool spawns a given number of
   //! threads using \c pthread_create() and keeps them running until
@@ -54,8 +37,7 @@ namespace ace {
   //! \note  Thread pools cannot be copied and thus do not provide
   //!        a copy constructor or assignment operator!
   //! \brief Manages a pool of threads.
-  class ThreadPool
-  {
+  class Pool {
 
   private:
     //! The number of threads in the pool
@@ -103,8 +85,8 @@ namespace ace {
 //      <char,memory::NumaAllocator> *_allocator;
 
     //! A thread pool cannot be copied.
-    ThreadPool(const ThreadPool&);
-    ThreadPool& operator=(const ThreadPool&);
+    Pool(const Pool&) = delete;
+    Pool& operator=(const Pool&) = delete;
 
   public:
 
@@ -119,11 +101,13 @@ namespace ace {
     //!                   that maps each thread to a specific CPU core.
     //! \param pinPattern This \e must be provided when using \c PIN_CUSTOM mode
     //!                   and is meaningless otherwise.
-    ThreadPool(int         numThreads,
-               PinningMode pinMode     = PIN_NONE,
-               int         *pinPattern = NULL);
+    Pool
+      ( int         numThreads
+      , PinningMode pinMode = PIN_NONE
+      , int         *pinPattern = NULL );
+
     //! Destructor
-    ~ThreadPool();
+    ~Pool();
     //! This function can be used like \c pthread_create, but it will assign
     //! the work to an existing thread instead of spawning a new one.
     //! \brief   Make a thread call the given function with the given argument.
@@ -231,6 +215,7 @@ namespace ace {
     volatile size_t counter1;
   };
 
+} // namespace thread
 } // namespace ace
 
 #endif /* THREADPOOL_HPP_ */

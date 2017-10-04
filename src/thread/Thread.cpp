@@ -25,6 +25,7 @@
 #include <thread/Thread.hpp>
 
 namespace ace {
+namespace thread {
 
 Thread
   ::Thread
@@ -187,4 +188,5 @@ Thread
   }
 }
 
+} // namespace thread
 } // namespace ace

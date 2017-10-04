@@ -19,7 +19,7 @@
 
 // ThreadPool.cpp - implementation of the thread pool class
 
-#include <ThreadPool.hpp>
+#include <thread/Pool.hpp>
 #include <thread/Exception.hpp>
 #include <thread/Thread.hpp>
 //#include <implementation/implementationDetails.hpp>
@@ -49,8 +49,9 @@ const size_t MAX_SCALAR_TYPE_SIZE = 64;
 const size_t MAX_SCALAR_TYPE_NUM  = 10;
 
 namespace ace {
+namespace thread {
 
-  ThreadPool::ThreadPool(int numThreads, PinningMode pinMode, int *pinPattern)
+  Pool::Pool(int numThreads, PinningMode pinMode, int *pinPattern)
   :
     _numThreads(numThreads)
   , _threads (NULL)
@@ -167,7 +168,7 @@ namespace ace {
     }
   }
 
-  ThreadPool::~ThreadPool()
+  Pool::~Pool()
   {
     waitAll();
 
@@ -181,45 +182,45 @@ namespace ace {
 //    delete _allocator;
   }
 
-  void ThreadPool::run(int       threadID,
+  void Pool::run(int       threadID,
                        funcptr_t function,
                        void      *arguments)
   {
     _threads[threadID]->execute(function,arguments);
   }
 
-  void ThreadPool::wait(int threadID)
+  void Pool::wait(int threadID)
   {
     _threads[threadID]->wait();
   }
 
 
-  void ThreadPool::waitAll()
+  void Pool::waitAll()
   {
     for(int i = 0; i < _numThreads; i++) wait(i);
   }
 
-  int ThreadPool::numThreads() const
+  int Pool::numThreads() const
   {
     return _numThreads;
   }
 
   void
-  ThreadPool
+  Pool
     ::barrier()
   {
     _barrier.apply();
   }
 
   void
-  ThreadPool
+  Pool
     ::beginCritical()
   {
     _mutex.lock();
   }
 
   void
-  ThreadPool
+  Pool
     ::beginCritical(bool &isFirstThread)
   {
     _mutex.lock();
@@ -228,14 +229,14 @@ namespace ace {
   }
 
   void
-  ThreadPool
+  Pool
     ::endCritical()
   {
     _mutex.unlock();
   }
 
   void
-  ThreadPool
+  Pool
     ::endCritical(bool &isLastThread)
   {
     isLastThread = static_cast<bool>(
@@ -251,5 +252,6 @@ namespace ace {
 //    return *_allocator;
 //  }
 
+} // namespace thread
 } // namespace ace
 

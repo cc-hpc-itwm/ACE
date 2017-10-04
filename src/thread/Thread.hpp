@@ -29,6 +29,7 @@
 #include <set>
 
 namespace ace {
+namespace thread {
 
 class Thread {
 
@@ -89,6 +90,7 @@ private:
   pthread_t _pthread_handle;
 };
 
-} /* namespace ace */
+} // namespace thread
+} // namespace ace
 
 #endif /* THREAD_H_ */

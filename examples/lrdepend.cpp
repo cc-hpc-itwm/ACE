@@ -179,7 +179,7 @@ main
   using Task = ace::task::Task<State>;
   using Schedule = ace::schedule::Schedule<State>;
   using Executer = ace::schedule::ScheduleExecuter<State>;
-  using ThreadPool = ace::ThreadPool;
+  using ThreadPool = ace::thread::Pool;
 
   ThreadPool threadPool(2);
 

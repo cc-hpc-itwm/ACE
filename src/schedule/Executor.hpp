@@ -23,7 +23,7 @@
 #define SCHEDULEEXECUTER_H_
 
 #include <schedule/Schedule.hpp>
-#include <ThreadPool.hpp>
+#include <thread/Pool.hpp>
 #include <Timer.hpp>
 #include <vector>
 
@@ -37,7 +37,7 @@ public:
 
   ScheduleExecuter
     ( Schedule<State> &
-    , ThreadPool & );
+    , thread::Pool & );
 
   void
   execute();
@@ -54,7 +54,7 @@ private:
   };
 
   Schedule<State> & _schedule;
-  ThreadPool & _pool;
+  thread::Pool & _pool;
 
   std::vector<Timer> _totalRunTimer;
   std::vector<Timer> _spinLockTimer;

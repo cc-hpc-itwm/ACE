@@ -10,8 +10,8 @@ add_library ( ACE
 	      thread/Barrier.cpp
 	      thread/Exception.cpp
 	      thread/Mutex.cpp
+	      thread/Pool.cpp
 	      thread/Thread.cpp
-	      ThreadPool.cpp
 	      utility/LockGuard.cpp
 	      )
 

@@ -29,7 +29,7 @@ template <typename State>
 ScheduleExecuter<State>
   ::ScheduleExecuter
    ( Schedule<State> & schedule
-   , ThreadPool & pool)
+   , thread::Pool & pool)
 : _schedule(schedule)
 , _pool(pool)
 , _totalRunTimer(_pool.numThreads())
