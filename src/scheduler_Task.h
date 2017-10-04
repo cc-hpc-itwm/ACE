@@ -14,6 +14,8 @@
 
 #include <memory>
 
+#define CACHELINESIZE 64
+
 namespace scheduler {
 
 
@@ -29,15 +31,10 @@ public:
     ( State const & initialState
     , State const & finalState )
   : TaskDef<State>()
-  , pState_( new State[16] )
-  , state_(pState_[0])
-  , pFinal_( new State[16] )
-  , final_(pFinal_[0])
+  , state_(initialState)
+  , final_(finalState)
   , status_(FREE)
-  {
-    state_ = initialState;
-    final_ = finalState;
-  }
+  { }
 
   ~Task
     () {
@@ -104,10 +101,8 @@ public:
 
 private:
 
-  std::unique_ptr<State[]> pState_;
-  State & state_;
-  std::unique_ptr<State[]> pFinal_;
-  State & final_;
+  alignas(CACHELINESIZE) State state_;
+  alignas(CACHELINESIZE) State final_;
 
   Status status_;
 };
