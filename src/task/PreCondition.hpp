@@ -11,6 +11,7 @@
 #include <cstring>
 
 namespace scheduler {
+namespace task {
 
 template <typename State>
 class PreCondition {
@@ -77,7 +78,8 @@ class PreConditionList
     std::vector<ElementType> conditions_;
 };
 
-}   // namespace scheduler
+} // namespace task
+} // namespace scheduler
 
 
 #endif    // SCHEDULER_CONDITION_H

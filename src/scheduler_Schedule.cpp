@@ -34,7 +34,7 @@ Schedule<State>
 template <typename State>
 void
 Schedule<State>
-	::insert(Task<State>* task)
+	::insert(task::Task<State>* task)
 {
   LockGuard lock(_mutex);
 
@@ -42,7 +42,7 @@ Schedule<State>
 }
 
 template <typename State>
-Task<State>*
+task::Task<State>*
 Schedule<State>
 	::get_executable_Task()
 {
@@ -55,7 +55,7 @@ Schedule<State>
 
   while(true)
   {
-    Task<State>* task_in_use;
+    task::Task<State>* task_in_use;
     {
       LockGuard lock(_mutex);
 
@@ -76,17 +76,17 @@ Schedule<State>
         {
           spin_ = tasklist_.begin();
         }
-      } while (   ((*spin_)->status() != Task<State>::FREE)
+      } while (   ((*spin_)->status() != task::Task<State>::FREE)
                && (spin_ != old_spin)             );
 
-      if ((*spin_)->status() != Task<State>::FREE)
+      if ((*spin_)->status() != task::Task<State>::FREE)
       {
         // no Task with status FREE could be found, so all of them are IN_USE
         // or FINISHED.
         return nullptr;
       }
 
-      (*spin_)->status() = Task<State>::IN_USE;
+      (*spin_)->status() = task::Task<State>::IN_USE;
       task_in_use = *spin_;
       // lock goes out of scope here
     }
@@ -98,8 +98,8 @@ Schedule<State>
     else
     {
       task_in_use->status() = ( task_in_use->finished()
-                              ? Task<State>::FINISHED
-                              : Task<State>::FREE );
+                              ? task::Task<State>::FINISHED
+                              : task::Task<State>::FREE );
       // loop on, try again in the next loop
     }
 

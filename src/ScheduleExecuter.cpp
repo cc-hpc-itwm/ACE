@@ -158,7 +158,7 @@ ScheduleExecuter<State>
 
   while (!finished)
   {
-    Task<State>* const task( schedule.get_executable_Task() );
+    task::Task<State>* const task( schedule.get_executable_Task() );
 
     if ( task )
     {

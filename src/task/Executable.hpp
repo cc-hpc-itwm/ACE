@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace scheduler {
+namespace task {
 
 template <typename State>
 class Executable {
@@ -69,7 +70,8 @@ class ExecutableList
     std::vector<ElementType> executables_;
 };
 
-}   // namespace scheduler
+} // namespace task
+} // namespace scheduler
 
 
 #endif    // TASK_EXECUTABLE_H

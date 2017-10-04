@@ -15,7 +15,7 @@
 #define CACHELINESIZE 64
 
 namespace scheduler {
-
+namespace task {
 
 template <typename State = int>
 class Task
@@ -106,7 +106,8 @@ private:
 };
 
 
-}   // namespace scheduler
+} // namespace task
+} // namespace scheduler
 
 
 #endif    // SCHEDULER_TASK_H

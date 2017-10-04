@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace scheduler {
+namespace task {
 
 template <typename State>
 class PostCondition
@@ -65,7 +66,8 @@ class PostConditionList
     std::vector<ElementType> conditions_;
 };
 
-}   // namespace scheduler
+} // namespace task
+} // namespace scheduler
 
 
 #endif    // SCHEDULER_CONDITION_H

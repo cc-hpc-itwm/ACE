@@ -53,7 +53,7 @@ class Schedule
       /** \brief insert another work package into the schedule */
       void
       insert
-        (Task<State>* task /*, Priority::Type priority = Priority::LOW*/ );
+        (task::Task<State>* task /*, Priority::Type priority = Priority::LOW*/ );
 
       /** \brief retrieve an executable task
        *
@@ -66,11 +66,11 @@ class Schedule
        *       one of the conditions changes to \b true .
        * \todo Why should the full Task* be returned? Return an Executable* instead?
        */
-      Task<State> *
+      task::Task<State> *
       get_executable_Task();
 
     private:
-      typedef std::list<Task<State>*>  Tasklist;
+      typedef std::list<task::Task<State>*>  Tasklist;
 
     private:
 

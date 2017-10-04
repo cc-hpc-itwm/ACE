@@ -7,7 +7,7 @@
 namespace detail {
 
 class PreCondition
-    : public scheduler::PreCondition<int> {
+    : public scheduler::task::PreCondition<int> {
 
   public:
 
@@ -47,7 +47,7 @@ class PreCondition
 };
 
 class PostCondition
-    : public scheduler::PostCondition<int> {
+    : public scheduler::task::PostCondition<int> {
 
   public:
 
@@ -80,7 +80,7 @@ class PostCondition
 };
 
 class Executable
-    : public scheduler::Executable<int> {
+    : public scheduler::task::Executable<int> {
 
   public:
 
@@ -176,7 +176,7 @@ main
   , char */*argv*/[] ) {
 
   using State = int;
-  using Task = scheduler::Task<State>;
+  using Task = scheduler::task::Task<State>;
   using Schedule = scheduler::Schedule<State>;
   using Executer = scheduler::ScheduleExecuter<State>;
   using ThreadPool = scheduler::ThreadPool;
@@ -207,13 +207,13 @@ main
 
       std::stringstream ss; ss << iTask;
 
-      taskList[iTask]->insert( std::move( std::unique_ptr<scheduler::PreCondition<int>>(new detail::PreCondition
+      taskList[iTask]->insert( std::move( std::unique_ptr<scheduler::task::PreCondition<int>>(new detail::PreCondition
                                 ( ss.str()
                                 , taskList[iLeftTask]->state()
                                 , taskList[iRightTask]->state() ) ) ) );
-      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::Executable<int>>(new detail::Executable
+      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::task::Executable<int>>(new detail::Executable
                                 ( ss.str() ) ) ) );
-      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::PostCondition<int>>(new detail::PostCondition
+      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::task::PostCondition<int>>(new detail::PostCondition
                                 ( ss.str()
                                 , taskList[iTask]->state() ) ) ) );
     }
@@ -283,7 +283,7 @@ main
 
       detail::Executable executable("virtual base executable");
 
-      scheduler::Executable<int> & baseExecutable(executable);
+      scheduler::task::Executable<int> & baseExecutable(executable);
 
       for(int iState(initialState);iState<finalState;++iState) {
         baseExecutable.execute(testState);

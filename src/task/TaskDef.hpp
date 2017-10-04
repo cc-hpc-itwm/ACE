@@ -14,6 +14,7 @@
 #include <task/PreCondition.hpp>
 
 namespace scheduler {
+namespace task {
 
 template <typename State>
 class TaskDef {
@@ -144,6 +145,7 @@ public:
 
 };
 
-}
+} // namespace task
+} // namespace scheduler
 
 #endif /* SCHEDULER_TASKDEF_H_ */
