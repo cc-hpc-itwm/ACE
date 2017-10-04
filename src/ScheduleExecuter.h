@@ -30,35 +30,35 @@
 namespace scheduler {
 
 template <typename State>
-class ScheduleExecuter
-{
-  public:
+class ScheduleExecuter {
 
-    ScheduleExecuter
-      ( Schedule<State> &
-      , ThreadPool & );
+public:
 
-    void
-    execute();
+  ScheduleExecuter
+    ( Schedule<State> &
+    , ThreadPool & );
 
-  private:
+  void
+  execute();
 
-    static void
-    execute
-      (int, void *);
+private:
 
-    struct t_parameter {
+  static void
+  execute
+    (int, void *);
 
-        Schedule<State> & schedule;
-    };
+  struct t_parameter {
 
-    Schedule<State> & _schedule;
-    ThreadPool & _pool;
+      Schedule<State> & schedule;
+  };
 
-    std::vector<Timer> _totalRunTimer;
-    std::vector<Timer> _spinLockTimer;
-    std::vector<Timer> _executerTimer;
-    std::vector<Timer> _postCondTimer;
+  Schedule<State> & _schedule;
+  ThreadPool & _pool;
+
+  std::vector<Timer> _totalRunTimer;
+  std::vector<Timer> _spinLockTimer;
+  std::vector<Timer> _executerTimer;
+  std::vector<Timer> _postCondTimer;
 };
 
 } /* namespace scheduler */
