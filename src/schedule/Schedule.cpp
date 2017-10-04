@@ -3,11 +3,12 @@
  * \date 2013-01
  * \copyright Fraunhofer ITWM
  */
-#include "scheduler_Schedule.h"
 
+#include <schedule/Schedule.hpp>
 #include <utility/LockGuard.h>
 
 namespace scheduler {
+namespace schedule {
 
 template <typename State>
 Schedule<State>
@@ -110,4 +111,5 @@ Schedule<State>
 
 }
 
-}     // namespace scheduler
+}  // namespace schedule
+}  // namespace scheduler

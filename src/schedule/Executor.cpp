@@ -19,11 +19,11 @@
  *
  */
 
-#include "ScheduleExecuter.h"
 #include <limits>
+#include <schedule/Executor.hpp>
 
-namespace scheduler
-{
+namespace scheduler {
+namespace schedule {
 
 template <typename State>
 ScheduleExecuter<State>
@@ -180,4 +180,5 @@ ScheduleExecuter<State>
   totalRunTimer.stop();
 }
 
+} // namespace schedule
 } /* namespace scheduler */

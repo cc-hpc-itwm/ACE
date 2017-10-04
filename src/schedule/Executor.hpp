@@ -22,12 +22,13 @@
 #ifndef SCHEDULEEXECUTER_H_
 #define SCHEDULEEXECUTER_H_
 
-#include <scheduler_Schedule.h>
+#include <schedule/Schedule.hpp>
 #include <ThreadPool.hpp>
 #include <Timer.hpp>
 #include <vector>
 
 namespace scheduler {
+namespace schedule {
 
 template <typename State>
 class ScheduleExecuter {
@@ -61,8 +62,9 @@ private:
   std::vector<Timer> _postCondTimer;
 };
 
-} /* namespace scheduler */
+} // namespace schedule
+} // namespace scheduler
 
-#include <ScheduleExecuter.cpp>
+#include <schedule/Executor.cpp>
 
 #endif /* SCHEDULEEXECUTER_H_ */

@@ -11,6 +11,7 @@
 #include <thread/Mutex.hpp>
 
 namespace scheduler {
+namespace schedule {
 
 /** \brief A schedule, managing executables and conditions when they can be run
  *
@@ -34,8 +35,8 @@ namespace scheduler {
  *       insert all tasks; then, run the schedule.
  */
 template <typename State>
-class Schedule
-{
+class Schedule {
+
 	public:
 
 //	  struct Priority {
@@ -80,8 +81,9 @@ class Schedule
       thread::Mutex _mutex;
 };
 
-}   // namespace scheduler
+}  // namespace schedule
+}  // namespace scheduler
 
-#include <scheduler_Schedule.cpp>
+#include <schedule/Schedule.cpp>
 
 #endif    // SCHEDULER_SCHEDULE_H

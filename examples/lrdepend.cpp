@@ -1,6 +1,6 @@
-#include <scheduler_Schedule.h>
+#include <schedule/Executor.hpp>
+#include <schedule/Schedule.hpp>
 #include <task/Task.hpp>
-#include <ScheduleExecuter.h>
 #include <iostream>
 #include <sstream>
 
@@ -177,8 +177,8 @@ main
 
   using State = int;
   using Task = scheduler::task::Task<State>;
-  using Schedule = scheduler::Schedule<State>;
-  using Executer = scheduler::ScheduleExecuter<State>;
+  using Schedule = scheduler::schedule::Schedule<State>;
+  using Executer = scheduler::schedule::ScheduleExecuter<State>;
   using ThreadPool = scheduler::ThreadPool;
 
   ThreadPool threadPool(2);
