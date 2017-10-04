@@ -22,7 +22,7 @@
 #ifndef LOCKGUARD_HPP_
 #define LOCKGUARD_HPP_
 
-#include <Thread.h>
+#include <thread/Thread.hpp>
 
 namespace scheduler {
 

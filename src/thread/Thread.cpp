@@ -20,7 +20,7 @@
  */
 
 #include <pthread.h>
-#include <Thread.h>
+#include <thread/Thread.hpp>
 
 namespace scheduler {
 

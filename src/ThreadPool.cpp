@@ -20,7 +20,7 @@
 // ThreadPool.cpp - implementation of the thread pool class
 
 #include <ThreadPool.hpp>
-#include <Thread.h>
+#include <thread/Thread.hpp>
 //#include <implementation/implementationDetails.hpp>
 //#include <memory/AllocatorAlignmentProxy.hpp>
 //#include <memory/NumaAllocator.hpp>

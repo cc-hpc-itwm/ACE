@@ -7,7 +7,7 @@
 #define SCHEDULER_SCHEDULE_H 1
 
 #include "scheduler_Task.h"
-#include <Thread.h>
+#include <thread/Thread.hpp>
 
 #include <list>
 
