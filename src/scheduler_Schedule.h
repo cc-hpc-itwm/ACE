@@ -6,10 +6,9 @@
 #ifndef SCHEDULER_SCHEDULE_H
 #define SCHEDULER_SCHEDULE_H 1
 
-#include "scheduler_Task.h"
-#include <thread/Mutex.hpp>
-
 #include <list>
+#include <task/Task.hpp>
+#include <thread/Mutex.hpp>
 
 namespace scheduler {
 

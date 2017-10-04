@@ -6,13 +6,11 @@
 #ifndef SCHEDULER_TASK_H
 #define SCHEDULER_TASK_H 1
 
-#include "scheduler_PreCondition.h"
-#include "scheduler_Executable.h"
-#include "scheduler_PostCondition.h"
-
-#include "scheduler_TaskDef.h"
-
 #include <memory>
+#include <task/Executable.hpp>
+#include <task/PostCondition.hpp>
+#include <task/PreCondition.hpp>
+#include <task/TaskDef.hpp>
 
 #define CACHELINESIZE 64
 

@@ -1,6 +1,5 @@
 #include <scheduler_Schedule.h>
-#include <scheduler_Task.h>
-#include <scheduler_TaskDef.h>
+#include <task/Task.hpp>
 #include <ScheduleExecuter.h>
 #include <iostream>
 #include <sstream>

@@ -3,14 +3,11 @@
  * \date 2013-01
  * \copyright Fraunhofer ITWM
  */
-#ifndef SCHEDULER_EXECUTABLE_H
-#define SCHEDULER_EXECUTABLE_H 1
-
-#include "scheduler_State.h"
+#ifndef TASK_EXECUTABLE_H
+#define TASK_EXECUTABLE_H 1
 
 #include <memory>
 #include <vector>
-
 
 namespace scheduler {
 
@@ -75,4 +72,4 @@ class ExecutableList
 }   // namespace scheduler
 
 
-#endif    // SCHEDULER_EXECUTABLE_H
+#endif    // TASK_EXECUTABLE_H

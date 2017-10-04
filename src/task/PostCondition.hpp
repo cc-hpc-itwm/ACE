@@ -3,14 +3,11 @@
  * \date 2013-01
  * \copyright Fraunhofer ITWM
  */
-#ifndef SCHEDULER_POSTCONDITION_H
-#define SCHEDULER_POSTCONDITION_H 1
-
-#include "scheduler_State.h"
+#ifndef TASK_POSTCONDITION_H
+#define TASK_POSTCONDITION_H 1
 
 #include <memory>
 #include <vector>
-
 
 namespace scheduler {
 

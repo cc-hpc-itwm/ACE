@@ -8,11 +8,10 @@
 #ifndef SCHEDULER_TASKDEF_H_
 #define SCHEDULER_TASKDEF_H_
 
-#include "scheduler_PreCondition.h"
-#include "scheduler_Executable.h"
-#include "scheduler_PostCondition.h"
-
 #include <memory>
+#include <task/Executable.hpp>
+#include <task/PostCondition.hpp>
+#include <task/PreCondition.hpp>
 
 namespace scheduler {
 

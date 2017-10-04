@@ -3,10 +3,8 @@
  * \date 2013-01
  * \copyright Fraunhofer ITWM
  */
-#ifndef SCHEDULER_PRECONDITION_H
-#define SCHEDULER_PRECONDITION_H 1
-
-#include "scheduler_State.h"
+#ifndef TASK_PRECONDITION_H
+#define TASK_PRECONDITION_H 1
 
 #include <memory>
 #include <vector>
