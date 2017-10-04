@@ -24,7 +24,7 @@
 
 #include <thread/Mutex.hpp>
 
-namespace scheduler {
+namespace ace {
 
 //! Simple lock guard for Pthread mutexes
 class LockGuard
@@ -38,6 +38,6 @@ private:
   thread::Mutex & _mutex;
 };
 
-}
+} // namespace ace
 
 #endif /* LOCKGUARD_HPP_ */

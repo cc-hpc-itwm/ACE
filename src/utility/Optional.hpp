@@ -25,7 +25,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace scheduler {
+namespace ace {
 
 template<typename T>
 class Optional {
@@ -109,6 +109,6 @@ private:
   bool given;
 };
 
-}
+} // namespace ace
 
 #endif /* OPTIONAL_HPP_ */

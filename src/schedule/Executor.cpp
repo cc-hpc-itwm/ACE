@@ -22,7 +22,7 @@
 #include <limits>
 #include <schedule/Executor.hpp>
 
-namespace scheduler {
+namespace ace {
 namespace schedule {
 
 template <typename State>
@@ -181,4 +181,4 @@ ScheduleExecuter<State>
 }
 
 } // namespace schedule
-} /* namespace scheduler */
+} // namespace ace

@@ -7,7 +7,7 @@
 namespace detail {
 
 class PreCondition
-    : public scheduler::task::PreCondition<int> {
+    : public ace::task::PreCondition<int> {
 
   public:
 
@@ -47,7 +47,7 @@ class PreCondition
 };
 
 class PostCondition
-    : public scheduler::task::PostCondition<int> {
+    : public ace::task::PostCondition<int> {
 
   public:
 
@@ -80,7 +80,7 @@ class PostCondition
 };
 
 class Executable
-    : public scheduler::task::Executable<int> {
+    : public ace::task::Executable<int> {
 
   public:
 
@@ -121,7 +121,7 @@ class Executable
 
     std::unique_ptr<int[]> _pVar;
     int &                  _var;
-    scheduler::Timer       _time;
+    ace::Timer       _time;
 
 };
 
@@ -164,7 +164,7 @@ class ExecutableDirect {
     std::string const _name;
 
     int _var;
-    scheduler::Timer _time;
+    ace::Timer _time;
 
 };
 
@@ -176,10 +176,10 @@ main
   , char */*argv*/[] ) {
 
   using State = int;
-  using Task = scheduler::task::Task<State>;
-  using Schedule = scheduler::schedule::Schedule<State>;
-  using Executer = scheduler::schedule::ScheduleExecuter<State>;
-  using ThreadPool = scheduler::ThreadPool;
+  using Task = ace::task::Task<State>;
+  using Schedule = ace::schedule::Schedule<State>;
+  using Executer = ace::schedule::ScheduleExecuter<State>;
+  using ThreadPool = ace::ThreadPool;
 
   ThreadPool threadPool(2);
 
@@ -207,13 +207,13 @@ main
 
       std::stringstream ss; ss << iTask;
 
-      taskList[iTask]->insert( std::move( std::unique_ptr<scheduler::task::PreCondition<int>>(new detail::PreCondition
+      taskList[iTask]->insert( std::move( std::unique_ptr<ace::task::PreCondition<int>>(new detail::PreCondition
                                 ( ss.str()
                                 , taskList[iLeftTask]->state()
                                 , taskList[iRightTask]->state() ) ) ) );
-      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::task::Executable<int>>(new detail::Executable
+      taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new detail::Executable
                                 ( ss.str() ) ) ) );
-      taskList[iTask]->insert(std::move ( std::unique_ptr<scheduler::task::PostCondition<int>>(new detail::PostCondition
+      taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new detail::PostCondition
                                 ( ss.str()
                                 , taskList[iTask]->state() ) ) ) );
     }
@@ -239,7 +239,7 @@ main
           , threadPool ).execute();
 
   {
-    scheduler::Timer singleTimer;
+    ace::Timer singleTimer;
 
     double val(0.);
 
@@ -255,7 +255,7 @@ main
   }
 
   {
-    scheduler::Timer singleTimer;
+    ace::Timer singleTimer;
 
     int const testState(0);
 
@@ -274,7 +274,7 @@ main
   }
 
   {
-    scheduler::Timer singleTimer;
+    ace::Timer singleTimer;
 
     int const testState(0);
 
@@ -283,7 +283,7 @@ main
 
       detail::Executable executable("virtual base executable");
 
-      scheduler::task::Executable<int> & baseExecutable(executable);
+      ace::task::Executable<int> & baseExecutable(executable);
 
       for(int iState(initialState);iState<finalState;++iState) {
         baseExecutable.execute(testState);
@@ -295,7 +295,7 @@ main
   }
 
   {
-    scheduler::Timer singleTimer;
+    ace::Timer singleTimer;
 
     int const testState(0);
 

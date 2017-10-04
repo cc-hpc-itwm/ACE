@@ -10,7 +10,7 @@
 #include <task/Task.hpp>
 #include <thread/Mutex.hpp>
 
-namespace scheduler {
+namespace ace {
 namespace schedule {
 
 /** \brief A schedule, managing executables and conditions when they can be run
@@ -82,7 +82,7 @@ class Schedule {
 };
 
 }  // namespace schedule
-}  // namespace scheduler
+}  // namespace ace
 
 #include <schedule/Schedule.cpp>
 

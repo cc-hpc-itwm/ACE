@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace scheduler {
+namespace ace {
 namespace task {
 
 template <typename State>
@@ -67,7 +67,7 @@ class PostConditionList
 };
 
 } // namespace task
-} // namespace scheduler
+} // namespace ace
 
 
 #endif    // SCHEDULER_CONDITION_H

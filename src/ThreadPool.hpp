@@ -27,7 +27,7 @@
 #include <thread/Mutex.hpp>
 #include <thread/Thread.hpp>
 
-namespace scheduler {
+namespace ace {
 
   //! Determines how threads are pinned to CPU cores
   enum PinningMode
@@ -231,6 +231,6 @@ namespace scheduler {
     volatile size_t counter1;
   };
 
-} // namespace gaspils
+} // namespace ace
 
 #endif /* THREADPOOL_HPP_ */

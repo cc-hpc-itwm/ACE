@@ -13,7 +13,7 @@
 #include <task/PostCondition.hpp>
 #include <task/PreCondition.hpp>
 
-namespace scheduler {
+namespace ace {
 namespace task {
 
 template <typename State>
@@ -146,6 +146,6 @@ public:
 };
 
 } // namespace task
-} // namespace scheduler
+} // namespace ace
 
 #endif /* SCHEDULER_TASKDEF_H_ */

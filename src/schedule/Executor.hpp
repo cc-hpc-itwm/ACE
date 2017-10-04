@@ -27,7 +27,7 @@
 #include <Timer.hpp>
 #include <vector>
 
-namespace scheduler {
+namespace ace {
 namespace schedule {
 
 template <typename State>
@@ -63,7 +63,7 @@ private:
 };
 
 } // namespace schedule
-} // namespace scheduler
+} // namespace ace
 
 #include <schedule/Executor.cpp>
 

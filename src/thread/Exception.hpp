@@ -28,9 +28,10 @@
 #include <utility/Optional.hpp>
 #include <set>
 
-namespace scheduler {
+namespace ace {
 
-class UnhandledThreadException : public std::exception {
+class UnhandledThreadException
+    : public std::exception {
 
 private:
 
@@ -43,6 +44,6 @@ public:
     virtual const char* what() const throw();
 };
 
-} /* namespace scheduler */
+} // namespace ace
 
 #endif /* THREAD_EXCEPTION_H_ */

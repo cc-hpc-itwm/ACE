@@ -21,7 +21,7 @@
 
 #include <utility/LockGuard.h>
 
-namespace scheduler {
+namespace ace {
 
 LockGuard
   ::LockGuard(thread::Mutex &mutex)
@@ -35,5 +35,5 @@ LockGuard::~LockGuard()
   _mutex.unlock();
 }
 
-}
+}  // namespace ace
 

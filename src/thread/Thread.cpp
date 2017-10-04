@@ -24,7 +24,7 @@
 #include <thread/Macros.hpp>
 #include <thread/Thread.hpp>
 
-namespace scheduler {
+namespace ace {
 
 Thread
   ::Thread
@@ -187,4 +187,4 @@ Thread
   }
 }
 
-} /* namespace scheduler */
+} // namespace ace

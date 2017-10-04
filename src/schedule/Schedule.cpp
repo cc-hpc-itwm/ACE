@@ -7,7 +7,7 @@
 #include <schedule/Schedule.hpp>
 #include <utility/LockGuard.h>
 
-namespace scheduler {
+namespace ace {
 namespace schedule {
 
 template <typename State>
@@ -112,4 +112,4 @@ Schedule<State>
 }
 
 }  // namespace schedule
-}  // namespace scheduler
+}  // namespace ace

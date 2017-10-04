@@ -21,8 +21,7 @@
 
 #include <stdexcept>
 
-namespace scheduler {
-
+namespace ace {
 namespace thread {
 
 //! An exception for failed Pthread API calls
@@ -37,14 +36,14 @@ class PthreadError
 
 };
 
-} /* namespace thread */
-} /* namespace scheduler */
+} // namespace thread
+} // namespace scheduler
 
-//// Macros that convert error codes to exceptions.
-//// We use macros instead of functions here to avoid unnecessary
-//// function calls, since these checks are used very often, even
-//// in performance critical parts of the code.
+// Macros that convert error codes to exceptions.
+// We use macros instead of functions here to avoid unnecessary
+// function calls, since these checks are used very often, even
+// in performance critical parts of the code.
 #define PTHREAD_CHECK(X)                                                       \
   if((X) != 0) {                                                               \
-    throw scheduler::thread::PthreadError();                                   \
+    throw ace::thread::PthreadError();                                   \
   }

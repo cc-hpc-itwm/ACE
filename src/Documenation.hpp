@@ -4,7 +4,7 @@
  * \copyright Fraunhofer ITWM
  */
 
-/** \namespace scheduler
+/** \namespace ace
  * \brief local scheduling class and algorithms
  *
  * This namespace provides a naive scheduling algorithm for local parallelisation. It is assumed that

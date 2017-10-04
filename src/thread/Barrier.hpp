@@ -24,8 +24,7 @@
 
 #include <pthread.h>
 
-namespace scheduler {
-
+namespace ace {
 namespace thread {
 
 class Barrier {
@@ -48,7 +47,7 @@ private:
 
 };
 
-} /* namespace thread */
-} /* namespace scheduler */
+} // namespace thread
+} // namespace ace
 
 #endif /* THREAD_BARRIER_H_ */

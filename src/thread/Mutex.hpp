@@ -24,7 +24,7 @@
 
 #include <pthread.h>
 
-namespace scheduler {
+namespace ace {
 
 namespace thread {
 
@@ -54,6 +54,6 @@ private:
 
 } /* namespace thread */
 
-} /* namespace scheduler */
+} /* namespace ace */
 
 #endif /* THREAD_MUTEX_H_ */

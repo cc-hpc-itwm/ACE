@@ -23,8 +23,7 @@
 #include <thread/Barrier.hpp>
 #include <thread/Macros.hpp>
 
-namespace scheduler {
-
+namespace ace {
 namespace thread {
 
 Barrier
@@ -51,5 +50,5 @@ Barrier
   pthread_barrier_wait(&_barrier);
 }
 
-} /* namespace thread */
-} /* namespace scheduler */
+} // namespace thread
+} // namespace ace

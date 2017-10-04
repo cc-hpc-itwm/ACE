@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace scheduler {
+namespace ace {
 namespace task {
 
 template <typename State>
@@ -71,7 +71,7 @@ class ExecutableList
 };
 
 } // namespace task
-} // namespace scheduler
+} // namespace ace
 
 
 #endif    // TASK_EXECUTABLE_H

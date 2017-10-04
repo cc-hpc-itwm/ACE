@@ -28,7 +28,7 @@
 #include <utility/Optional.hpp>
 #include <set>
 
-namespace scheduler {
+namespace ace {
 
 class Thread {
 
@@ -89,6 +89,6 @@ private:
   pthread_t _pthread_handle;
 };
 
-} /* namespace scheduler */
+} /* namespace ace */
 
 #endif /* THREAD_H_ */

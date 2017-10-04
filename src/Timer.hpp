@@ -11,7 +11,7 @@
 #include <ctime>
 #include <iostream>
 
-namespace scheduler {
+namespace ace {
 
   class Timer {
 
@@ -94,6 +94,6 @@ namespace scheduler {
 
   };
 
-}
+} // namespace ace
 
 #endif /* TIMER_HPP_ */

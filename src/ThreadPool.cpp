@@ -48,8 +48,7 @@ extern "C" {
 const size_t MAX_SCALAR_TYPE_SIZE = 64;
 const size_t MAX_SCALAR_TYPE_NUM  = 10;
 
-namespace scheduler
-{
+namespace ace {
 
   ThreadPool::ThreadPool(int numThreads, PinningMode pinMode, int *pinPattern)
   :
@@ -252,5 +251,5 @@ namespace scheduler
 //    return *_allocator;
 //  }
 
-} // namespace GaspiLS
+} // namespace ace
 

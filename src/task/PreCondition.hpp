@@ -10,7 +10,7 @@
 #include <vector>
 #include <cstring>
 
-namespace scheduler {
+namespace ace {
 namespace task {
 
 template <typename State>
@@ -79,7 +79,7 @@ class PreConditionList
 };
 
 } // namespace task
-} // namespace scheduler
+} // namespace ace
 
 
 #endif    // SCHEDULER_CONDITION_H

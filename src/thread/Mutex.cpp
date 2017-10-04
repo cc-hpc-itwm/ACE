@@ -22,7 +22,7 @@
 #include <thread/Macros.hpp>
 #include <thread/Mutex.hpp>
 
-namespace scheduler {
+namespace ace {
 
 namespace thread {
 
@@ -58,5 +58,5 @@ Mutex
   pthread_mutex_unlock(&_mutex);
 }
 
-} /* namespace thread */
-} /* namespace scheduler */
+} // namespace thread */
+} // namespace ace

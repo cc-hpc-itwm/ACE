@@ -22,7 +22,7 @@
 #include <sstream>
 #include <thread/Exception.hpp>
 
-namespace scheduler {
+namespace ace {
 
 UnhandledThreadException
   ::UnhandledThreadException
