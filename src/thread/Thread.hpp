@@ -89,67 +89,6 @@ private:
   pthread_t _pthread_handle;
 };
 
-namespace thread {
-
-class Barrier {
-
-public:
-
-    Barrier
-      (unsigned short nThreads);
-
-    ~Barrier
-      ();
-
-    void
-    apply
-      ();
-
-private:
-
-    pthread_barrier_t _barrier;
-
-};
-
-class Mutex {
-
-public:
-
-    Mutex
-      ();
-
-    ~Mutex
-      ();
-
-    void
-    lock
-      ();
-
-    void
-    unlock
-      ();
-
-private:
-
-    pthread_mutex_t _mutex;
-
-};
-
-}
-
-class UnhandledThreadException : public std::exception {
-
-private:
-
-    std::string _whatString;
-
-public:
-
-    UnhandledThreadException(int threadID, std::string what = std::string() );
-    virtual ~UnhandledThreadException() throw() {}
-    virtual const char* what() const throw();
-};
-
-} /* namespace GaspiLS */
+} /* namespace scheduler */
 
 #endif /* THREAD_H_ */

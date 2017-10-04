@@ -20,24 +20,11 @@
  */
 
 #include <pthread.h>
+#include <thread/Exception.hpp>
+#include <thread/Macros.hpp>
 #include <thread/Thread.hpp>
 
 namespace scheduler {
-
-//// Macros that convert error codes to exceptions.
-//// We use macros instead of functions here to avoid unnecessary
-//// function calls, since these checks are used very often, even
-//// in performance critical parts of the code.
-#define PTHREAD_CHECK(X) if((X) != 0) { throw PthreadError(); }
-
-//! An exception for failed Pthread API calls
-class PthreadError : public std::exception
-{
-  virtual const char* what() const throw()
-  {
-    return "An error occurred during a call to the Pthreads API!";
-  }
-};
 
 Thread
   ::Thread
@@ -200,63 +187,4 @@ Thread
   }
 }
 
-namespace thread {
-
-Barrier
-  ::Barrier
-   (unsigned short nThreads)
-: _barrier()
-{
-  PTHREAD_CHECK
-    (pthread_barrier_init(&_barrier, NULL, nThreads));
-}
-
-Barrier
-  ::~Barrier
-      ()
-{
-  pthread_barrier_destroy(&_barrier);
-}
-
-void
-Barrier
-  ::apply
-   ()
-{
-  pthread_barrier_wait(&_barrier);
-}
-
-Mutex
-  ::Mutex
-   ()
-:_mutex()
-{
-  PTHREAD_CHECK
-    (pthread_mutex_init(&_mutex, NULL));
-}
-
-Mutex
-  ::~Mutex
-      ()
-{
-  pthread_mutex_destroy(&_mutex);
-}
-
-void
-Mutex
-  ::lock
-      ()
-{
-  pthread_mutex_lock(&_mutex);
-}
-
-void
-Mutex
-  ::unlock
-      ()
-{
-  pthread_mutex_unlock(&_mutex);
-}
-
-} /* namespace thread */
-} /* namespace GaspiLS */
+} /* namespace scheduler */

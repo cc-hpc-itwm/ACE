@@ -7,6 +7,9 @@ add_library ( ACE
 #	      scheduler_Threading.cpp
 #	      scheduler_Timers.cpp
 #	      ScheduleExecuter.cpp
+	      thread/Barrier.cpp
+	      thread/Exception.cpp
+	      thread/Mutex.cpp
 	      thread/Thread.cpp
 	      ThreadPool.cpp
 	      utility/LockGuard.cpp

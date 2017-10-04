@@ -20,6 +20,7 @@
 // ThreadPool.cpp - implementation of the thread pool class
 
 #include <ThreadPool.hpp>
+#include <thread/Exception.hpp>
 #include <thread/Thread.hpp>
 //#include <implementation/implementationDetails.hpp>
 //#include <memory/AllocatorAlignmentProxy.hpp>
@@ -250,28 +251,6 @@ namespace scheduler
 //  {
 //    return *_allocator;
 //  }
-
-  UnhandledThreadException::UnhandledThreadException( int threadID
-                                                    , std::string what)
-  {
-    std::stringstream ss;
-
-    if(what.empty()) {
-      ss << "unknown exception thrown by thread #"
-         << threadID;
-    } else {
-      ss << "thread #"
-         << threadID
-         << ": "
-         << what;
-    }
-    _whatString = ss.str();
-  }
-
-  const char* UnhandledThreadException::what() const throw()
-  {
-    return _whatString.c_str();
-  }
 
 } // namespace GaspiLS
 

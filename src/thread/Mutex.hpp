@@ -15,29 +15,45 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * LockGuard.hpp
+ * Thread.h
  *
  */
 
-#ifndef LOCKGUARD_HPP_
-#define LOCKGUARD_HPP_
+#ifndef THREAD_MUTEX_H_
+#define THREAD_MUTEX_H_
 
-#include <thread/Mutex.hpp>
+#include <pthread.h>
 
 namespace scheduler {
 
-//! Simple lock guard for Pthread mutexes
-class LockGuard
-{
-public:
-  LockGuard(thread::Mutex & mutex);
+namespace thread {
 
-  ~LockGuard();
+class Mutex {
+
+public:
+
+  Mutex
+    ();
+
+  ~Mutex
+    ();
+
+  void
+  lock
+    ();
+
+  void
+  unlock
+    ();
 
 private:
-  thread::Mutex & _mutex;
+
+  pthread_mutex_t _mutex;
+
 };
 
-}
+} /* namespace thread */
 
-#endif /* LOCKGUARD_HPP_ */
+} /* namespace scheduler */
+
+#endif /* THREAD_MUTEX_H_ */

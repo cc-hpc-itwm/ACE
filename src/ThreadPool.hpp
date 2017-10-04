@@ -23,7 +23,8 @@
 #define THREADPOOL_HPP_
 
 #include <memory>
-#include <pthread.h>
+#include <thread/Barrier.hpp>
+#include <thread/Mutex.hpp>
 #include <thread/Thread.hpp>
 
 namespace scheduler {
