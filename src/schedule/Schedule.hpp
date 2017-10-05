@@ -54,6 +54,9 @@ template <typename State>
 class Schedule {
 
     public:
+
+      using iterator = typename std::list<task::Task<State>*>::iterator;
+
       /** \brief initialise the schedule */
       Schedule();
 
@@ -66,9 +69,13 @@ class Schedule {
       insert
         (task::Task<State>* task);
 
+      iterator
+      begin
+        ();
+
       task::Task<State> *
       getAndLockNextFreeTask
-        ();
+        (iterator & hint);
 
       /** \brief retrieve an executable task
        *
@@ -82,14 +89,15 @@ class Schedule {
        * \todo Why should the full Task* be returned? Return an Executable* instead?
        */
       task::Task<State> *
-      get_executable_Task();
+      get_executable_Task
+        (iterator & hint);
 
     private:
 
       typedef std::list<task::Task<State>*>  Tasklist;
 
       Tasklist tasklist_;
-      typename Tasklist::iterator spin_;
+//      iterator spin_;
 
       thread::Mutex _mutex;
 };

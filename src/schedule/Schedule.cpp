@@ -28,7 +28,6 @@ template <typename State>
 Schedule<State>
 	::Schedule()
   :  tasklist_()
-  ,  spin_(tasklist_.begin())
 { }
 
 template <typename State>
@@ -39,8 +38,7 @@ Schedule<State>
 
   for (Iter iter (tasklist_.begin())
       ;     iter != tasklist_.end()
-      ;   ++iter )
-  {
+      ;   ++iter ) {
     delete (*iter);   // members executable_ and (if present) condition_ are deleted in a Task destructor.
   }
 }
@@ -57,10 +55,18 @@ Schedule<State>
 }
 
 template <typename State>
+typename Schedule<State>::iterator
+Schedule<State>
+  ::begin
+   () {
+  return tasklist_.begin();
+}
+
+template <typename State>
 task::Task<State> *
 Schedule<State>
   ::getAndLockNextFreeTask
-   () {
+   (iterator & spin_) {
 
   task::Task<State>* task_in_use(nullptr);
   {
@@ -83,8 +89,7 @@ Schedule<State>
     } while (   ((*spin_)->status() != task::Task<State>::FREE)
              && (spin_ != old_spin) );
 
-    if ((*spin_)->status() != task::Task<State>::FREE)
-    {
+    if ((*spin_)->status() != task::Task<State>::FREE) {
       // no Task with status FREE could be found, so all of them are IN_USE
       // or FINISHED.
       return nullptr;
@@ -102,7 +107,7 @@ Schedule<State>
 template <typename State>
 task::Task<State>*
 Schedule<State>
-	::get_executable_Task()
+	::get_executable_Task(iterator & spin)
 {
   // assumption here: tasklist_ is not modified concurrently when getExecutable() is called
   /// \todo make clear documentation about concurrency assumptions here
@@ -115,7 +120,7 @@ Schedule<State>
   {
 
     task::Task<State>* task_in_use
-      ( getAndLockNextFreeTask() );
+      ( getAndLockNextFreeTask(spin) );
 
     if( !task_in_use) {
       return task_in_use;
