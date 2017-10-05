@@ -96,7 +96,9 @@ ScheduleExecuter<State>
             << min_totalRun
             << ", "
             << max_totalRun
-            << "]"
+            << "]\t <-> "
+            << ( ( avg_totalRun / avg_totalRun ) * 100. )
+            << "%"
             << std::endl;
 
   std::cout << "\texecuter time : "
@@ -105,7 +107,9 @@ ScheduleExecuter<State>
             << min_executer
             << ", "
             << max_executer
-            << "]"
+            << "]\t <-> "
+            << ( ( avg_executer / avg_totalRun ) * 100. )
+            << "%"
             << std::endl;
 
   std::cout << "\tpostCond time : "
@@ -114,7 +118,9 @@ ScheduleExecuter<State>
             << min_postCond
             << ", "
             << max_postCond
-            << "]"
+            << "]\t <-> "
+            << ( ( avg_postCond / avg_totalRun ) * 100. )
+            << "%"
             << std::endl;
 
   std::cout << "\tspin lock time : "
@@ -123,7 +129,9 @@ ScheduleExecuter<State>
             << min_spinLock
             << ", "
             << max_spinLock
-            << "]"
+            << "]\t <-> "
+            << ( ( avg_spinLock / avg_totalRun ) * 100. )
+            << "%"
             << std::endl;
   std::cout << std::endl;
 
