@@ -70,7 +70,7 @@ Schedule<State>
 
   task::Task<State>* task_in_use(nullptr);
   {
-    LockGuard lock(_mutex);
+//    LockGuard lock(_mutex);
 
     if ( tasklist_.end() == spin_ ) {
       spin_ = tasklist_.begin();
@@ -86,18 +86,27 @@ Schedule<State>
       if ( tasklist_.end() == spin_ ) {
         spin_ = tasklist_.begin();
       }
-    } while (   ((*spin_)->status() != task::Task<State>::FREE)
-             && (spin_ != old_spin) );
 
-    if ((*spin_)->status() != task::Task<State>::FREE) {
-      // no Task with status FREE could be found, so all of them are IN_USE
-      // or FINISHED.
-      return nullptr;
-    }
+      if((*spin_)->status() == task::Task<State>::Status::FREE) {
+        LockGuard lock(_mutex);
+        if((*spin_)->status() == task::Task<State>::Status::FREE) {
+          (*spin_)->status() = task::Task<State>::Status::IN_USE;
+          task_in_use = *spin_;
+          break;
+        }
+      }
 
-    (*spin_)->status() = task::Task<State>::IN_USE;
-    task_in_use = *spin_;
-    // lock goes out of scope here
+    } while ( (spin_ != old_spin) );
+
+//    if ((*spin_)->status() != task::Task<State>::FREE) {
+//      // no Task with status FREE could be found, so all of them are IN_USE
+//      // or FINISHED.
+//      return nullptr;
+//    }
+//
+//    (*spin_)->status() = task::Task<State>::IN_USE;
+//    task_in_use = *spin_;
+//    // lock goes out of scope here
   }
 
   return task_in_use;
@@ -133,8 +142,8 @@ Schedule<State>
     else
     {
       task_in_use->status() = ( task_in_use->finished()
-                              ? task::Task<State>::FINISHED
-                              : task::Task<State>::FREE );
+                              ? task::Task<State>::Status::FINISHED
+                              : task::Task<State>::Status::FREE );
       // loop on, try again in the next loop
     }
 

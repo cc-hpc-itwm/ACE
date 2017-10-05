@@ -97,7 +97,6 @@ class Schedule {
       typedef std::list<task::Task<State>*>  Tasklist;
 
       Tasklist tasklist_;
-//      iterator spin_;
 
       thread::Mutex _mutex;
 };
