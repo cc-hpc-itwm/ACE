@@ -57,6 +57,49 @@ Schedule<State>
 }
 
 template <typename State>
+task::Task<State> *
+Schedule<State>
+  ::getAndLockNextFreeTask
+   () {
+
+  task::Task<State>* task_in_use(nullptr);
+  {
+    LockGuard lock(_mutex);
+
+    if ( tasklist_.end() == spin_ ) {
+      spin_ = tasklist_.begin();
+    }
+    // here: spin_ is a valid, nonsingular iterator.
+
+    typedef typename Tasklist::iterator Iter;
+
+    Iter const old_spin(spin_);
+
+    do {
+      ++spin_;
+      if ( tasklist_.end() == spin_ ) {
+        spin_ = tasklist_.begin();
+      }
+    } while (   ((*spin_)->status() != task::Task<State>::FREE)
+             && (spin_ != old_spin) );
+
+    if ((*spin_)->status() != task::Task<State>::FREE)
+    {
+      // no Task with status FREE could be found, so all of them are IN_USE
+      // or FINISHED.
+      return nullptr;
+    }
+
+    (*spin_)->status() = task::Task<State>::IN_USE;
+    task_in_use = *spin_;
+    // lock goes out of scope here
+  }
+
+  return task_in_use;
+
+}
+
+template <typename State>
 task::Task<State>*
 Schedule<State>
 	::get_executable_Task()
@@ -70,40 +113,12 @@ Schedule<State>
 
   while(true)
   {
-    task::Task<State>* task_in_use;
-    {
-      LockGuard lock(_mutex);
 
-      if ( tasklist_.end() == spin_ )
-      {
-        spin_ = tasklist_.begin();
-      }
-      // here: spin_ is a valid, nonsingular iterator.
+    task::Task<State>* task_in_use
+      ( getAndLockNextFreeTask() );
 
-      typedef typename Tasklist::iterator Iter;
-
-      Iter const old_spin(spin_);
-
-      do
-      {
-        ++spin_;
-        if ( tasklist_.end() == spin_ )
-        {
-          spin_ = tasklist_.begin();
-        }
-      } while (   ((*spin_)->status() != task::Task<State>::FREE)
-               && (spin_ != old_spin)             );
-
-      if ((*spin_)->status() != task::Task<State>::FREE)
-      {
-        // no Task with status FREE could be found, so all of them are IN_USE
-        // or FINISHED.
-        return nullptr;
-      }
-
-      (*spin_)->status() = task::Task<State>::IN_USE;
-      task_in_use = *spin_;
-      // lock goes out of scope here
+    if( !task_in_use) {
+      return task_in_use;
     }
 
     if (task_in_use->ready_to_execute())

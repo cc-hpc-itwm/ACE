@@ -53,12 +53,6 @@ namespace schedule {
 template <typename State>
 class Schedule {
 
-	public:
-
-//	  struct Priority {
-//		  enum Type {LOW,HIGH};
-//	  };
-
     public:
       /** \brief initialise the schedule */
       Schedule();
@@ -70,7 +64,11 @@ class Schedule {
       /** \brief insert another work package into the schedule */
       void
       insert
-        (task::Task<State>* task /*, Priority::Type priority = Priority::LOW*/ );
+        (task::Task<State>* task);
+
+      task::Task<State> *
+      getAndLockNextFreeTask
+        ();
 
       /** \brief retrieve an executable task
        *
@@ -87,9 +85,8 @@ class Schedule {
       get_executable_Task();
 
     private:
-      typedef std::list<task::Task<State>*>  Tasklist;
 
-    private:
+      typedef std::list<task::Task<State>*>  Tasklist;
 
       Tasklist tasklist_;
       typename Tasklist::iterator spin_;
