@@ -70,16 +70,12 @@ Schedule<State>
 
   task::Task<State>* task_in_use(nullptr);
   {
-//    LockGuard lock(_mutex);
-
     if ( tasklist_.end() == spin_ ) {
       spin_ = tasklist_.begin();
     }
     // here: spin_ is a valid, nonsingular iterator.
 
-    typedef typename Tasklist::iterator Iter;
-
-    Iter const old_spin(spin_);
+    iterator const old_spin(spin_);
 
     do {
       ++spin_;
@@ -88,25 +84,26 @@ Schedule<State>
       }
 
       if((*spin_)->status() == task::Task<State>::Status::FREE) {
-        LockGuard lock(_mutex);
-        if((*spin_)->status() == task::Task<State>::Status::FREE) {
-          (*spin_)->status() = task::Task<State>::Status::IN_USE;
+
+        using Status = typename task::Task<State>::Status;
+
+        Status expected(Status::FREE);
+        Status desired (Status::IN_USE);
+
+        int * const pExpectedL(reinterpret_cast<int*>(&expected));
+        int * const pDesiredL (reinterpret_cast<int*>(&desired));
+        int * const pValueL   (reinterpret_cast<int*>(&(*spin_)->status()));
+
+        if(__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL) ) {
           task_in_use = *spin_;
           break;
         }
       }
 
-    } while ( (spin_ != old_spin) );
+    } while ( spin_ != old_spin );
 
-//    if ((*spin_)->status() != task::Task<State>::FREE) {
-//      // no Task with status FREE could be found, so all of them are IN_USE
-//      // or FINISHED.
-//      return nullptr;
-//    }
-//
-//    (*spin_)->status() = task::Task<State>::IN_USE;
-//    task_in_use = *spin_;
-//    // lock goes out of scope here
+    // no Task with status FREE could be found, so all of them are IN_USE
+    // or FINISHED. So, we  return nullptr;
   }
 
   return task_in_use;
