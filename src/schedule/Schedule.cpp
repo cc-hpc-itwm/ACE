@@ -39,7 +39,8 @@ Schedule<State>
   for (Iter iter (tasklist_.begin())
       ;     iter != tasklist_.end()
       ;   ++iter ) {
-    delete (*iter);   // members executable_ and (if present) condition_ are deleted in a Task destructor.
+    delete (*iter);   // members executable_ and (if present)
+                      // condition_ are deleted in a Task destructor.
   }
 }
 
@@ -83,9 +84,9 @@ Schedule<State>
         spin_ = tasklist_.begin();
       }
 
-      if((*spin_)->status() == task::Task<State>::Status::FREE) {
+      using Status = typename task::Task<State>::Status;
 
-        using Status = typename task::Task<State>::Status;
+      if((*spin_)->status() == Status::FREE) {
 
         Status expected(Status::FREE);
         Status desired (Status::IN_USE);
@@ -94,7 +95,7 @@ Schedule<State>
         int * const pDesiredL (reinterpret_cast<int*>(&desired));
         int * const pValueL   (reinterpret_cast<int*>(&(*spin_)->status()));
 
-        if(__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL) ) {
+        if(__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL)) {
           task_in_use = *spin_;
           break;
         }
@@ -119,7 +120,7 @@ Schedule<State>
   /// \todo make clear documentation about concurrency assumptions here
   if (tasklist_.empty())
   {
-    return 0;
+    return nullptr;
   }
 
   while(true)
@@ -138,9 +139,11 @@ Schedule<State>
     }
     else
     {
+      using Status = typename task::Task<State>::Status;
+
       task_in_use->status() = ( task_in_use->finished()
-                              ? task::Task<State>::Status::FINISHED
-                              : task::Task<State>::Status::FREE );
+                              ? Status::FINISHED
+                              : Status::FREE );
       // loop on, try again in the next loop
     }
 
