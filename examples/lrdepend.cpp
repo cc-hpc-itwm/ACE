@@ -220,7 +220,7 @@ main
   using Executer = ace::schedule::ScheduleExecuter<State>;
   using ThreadPool = ace::thread::Pool;
 
-  ThreadPool threadPool(2);
+  ThreadPool threadPool(2,ace::thread::PIN_EVEN);
 
   State initialState(0);
   State finalState(10000);
