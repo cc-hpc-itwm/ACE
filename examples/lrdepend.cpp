@@ -3,8 +3,44 @@
 #include <task/Task.hpp>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
+#include <time.h>
+
+#include <x86intrin.h>
+
+#define WAITTIME 1000
 
 namespace detail {
+
+void
+nsleep (long nsec ) {
+
+//  struct timespec wait;
+//
+//  wait.tv_sec = 0;
+//  wait.tv_nsec = nsec;
+//
+//  if(nanosleep(&wait, NULL)) {
+//    std::cout << "something weird happened" << std::endl;
+//  }
+
+  long cycleStart(__rdtsc());
+
+  double const freqGHz(1.7);
+  double const durationCycles( static_cast<double>(nsec)
+                             * freqGHz );
+
+  long upperCycleLimit ( cycleStart
+                       + static_cast<long>(durationCycles) );
+
+  long cycle (__rdtsc() );
+
+  while ( cycle < upperCycleLimit ) {
+    cycle = __rdtsc();
+  }
+
+
+}
 
 class PreCondition
     : public ace::task::PreCondition<int> {
@@ -112,6 +148,7 @@ class Executable
 //                << std::endl;
       _time.start();
       _var+=1;
+      nsleep(WAITTIME);
       _time.stop();
     }
 
@@ -156,6 +193,8 @@ class ExecutableDirect {
 //                << std::endl;
       _time.start();
       _var+=1;
+//      usleep(1);
+      nsleep(WAITTIME);
       _time.stop();
     }
 
@@ -186,7 +225,7 @@ main
   State initialState(0);
   State finalState(10000);
 
-  int const nTask(20);
+  int const nTask(18);
 
   Schedule schedule;
   {
@@ -247,6 +286,7 @@ main
     for(int iTask(0);iTask<nTask;++iTask) {
       for(int iState(initialState);iState<finalState;++iState) {
         val +=1;
+        detail::nsleep(WAITTIME);
       }
     }
     singleTimer.stop();
