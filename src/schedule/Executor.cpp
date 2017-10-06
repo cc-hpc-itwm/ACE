@@ -90,14 +90,33 @@ ScheduleExecuter<State>
   }
 
   std::cout << "schedule execution statistics:" << std::endl;
-  std::cout << "\ttotal run time : "
+
+  double const avg_totalRunC
+    (avg_executer + avg_postCond + avg_spinLock);
+  double const min_totalRunC
+    (min_executer + min_postCond + min_spinLock);
+  double const max_totalRunC
+    (max_executer + max_postCond + max_spinLock);
+
+  std::cout << "\ttotal run time (c): "
+            << avg_totalRunC
+            << " ["
+            << min_totalRunC
+            << ", "
+            << max_totalRunC
+            << "]\t <-> "
+            << ( ( avg_totalRunC / avg_totalRunC ) * 100. )
+            << "%"
+            << std::endl;
+
+  std::cout << "\ttotal run time (m): "
             << avg_totalRun
             << " ["
             << min_totalRun
             << ", "
             << max_totalRun
             << "]\t <-> "
-            << ( ( avg_totalRun / avg_totalRun ) * 100. )
+            << ( ( avg_totalRun / avg_totalRunC ) * 100. )
             << "%"
             << std::endl;
 
@@ -108,7 +127,7 @@ ScheduleExecuter<State>
             << ", "
             << max_executer
             << "]\t <-> "
-            << ( ( avg_executer / avg_totalRun ) * 100. )
+            << ( ( avg_executer / avg_totalRunC ) * 100. )
             << "%"
             << std::endl;
 
@@ -119,36 +138,18 @@ ScheduleExecuter<State>
             << ", "
             << max_postCond
             << "]\t <-> "
-            << ( ( avg_postCond / avg_totalRun ) * 100. )
+            << ( ( avg_postCond / avg_totalRunC ) * 100. )
             << "%"
             << std::endl;
 
-  std::cout << "\tspin lock time (m) : "
+  std::cout << "\tspin lock time : "
             << avg_spinLock
             << " ["
             << min_spinLock
             << ", "
             << max_spinLock
             << "]\t <-> "
-            << ( ( avg_spinLock / avg_totalRun ) * 100. )
-            << "%"
-            << std::endl;
-
-  double const avg_spinLockC
-    (avg_totalRun - avg_executer - avg_postCond);
-  double const min_spinLockC
-    (min_totalRun - min_executer - min_postCond);
-  double const max_spinLockC
-    (max_totalRun - max_executer - max_postCond);
-
-  std::cout << "\tspin lock time (c): "
-            << avg_spinLockC
-            << " ["
-            << min_spinLockC
-            << ", "
-            << max_spinLockC
-            << "]\t <-> "
-            << ( ( avg_spinLockC / avg_totalRun ) * 100. )
+            << ( ( avg_spinLock / avg_totalRunC ) * 100. )
             << "%"
             << std::endl;
 
@@ -181,6 +182,7 @@ ScheduleExecuter<State>
   bool finished(false);
 
   totalRunTimer.start();
+
   spinLockTimer.start();
 
   while (!finished)
@@ -208,6 +210,7 @@ ScheduleExecuter<State>
   }
 
   spinLockTimer.stop();
+
   totalRunTimer.stop();
 }
 
