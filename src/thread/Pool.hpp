@@ -1,4 +1,4 @@
-/*/*
+/*
  * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2017
  * 
  * This file is part of ACE.
