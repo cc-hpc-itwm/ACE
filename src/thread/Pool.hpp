@@ -1,9 +1,9 @@
-/*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2016
+/*/*
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2017
  * 
- * This file is part of GaspiLS.
+ * This file is part of ACE.
  * 
- * GaspiLS is free software; you can redistribute it
+ * ACE is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public License
  * version 3 as published by the Free Software Foundation.
  * 
@@ -13,9 +13,9 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
+ * along with ACE. If not, see <http://www.gnu.org/licenses/>.
  *
- * ThreadPool.hpp
+ * Pool.hpp
  *
  */
 
