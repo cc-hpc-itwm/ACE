@@ -8,21 +8,12 @@
 
 #include <x86intrin.h>
 
-#define WAITTIME 1000
+#define WAITTIME 100
 
 namespace detail {
 
 void
 nsleep (long nsec ) {
-
-//  struct timespec wait;
-//
-//  wait.tv_sec = 0;
-//  wait.tv_nsec = nsec;
-//
-//  if(nanosleep(&wait, NULL)) {
-//    std::cout << "something weird happened" << std::endl;
-//  }
 
   long cycleStart(__rdtsc());
 
@@ -135,7 +126,9 @@ class Executable
                       << ": "
                       << _var
                       << ", time = "
-                      << _time.elapsedTime()
+                      << _time.elapsedCycles()
+                      << ", time per execute = "
+                      << (_time.elapsedCycles() / static_cast<double>(_var))
                       << std::endl;
     }
 
@@ -180,7 +173,9 @@ class ExecutableDirect {
                       << ": "
                       << _var
                       << ", time = "
-                      << _time.elapsedTime()
+                      << _time.elapsedCycles()
+                      << ", time per execute = "
+                      << (_time.elapsedCycles() / static_cast<double>(_var))
                       << std::endl;
     }
 
@@ -220,81 +215,88 @@ main
   using Executer = ace::schedule::ScheduleExecuter<State>;
   using ThreadPool = ace::thread::Pool;
 
-  ThreadPool threadPool(2,ace::thread::PIN_EVEN);
+  ThreadPool threadPool(1,ace::thread::PIN_EVEN);
 
   State initialState(0);
   State finalState(10000);
 
   int const nTask(18);
 
-  Schedule schedule;
   {
-    std::vector<Task*> taskList(nTask);
+    Schedule schedule;
+    {
+      std::vector<Task*> taskList(nTask);
 
-    for( int iTask(0)
-       ;     iTask < nTask
-       ;   ++iTask ) {
-      taskList[iTask] = new Task(initialState, finalState);
-      schedule.insert(taskList[iTask]);
+      for( int iTask(0)
+         ;     iTask < nTask
+         ;   ++iTask ) {
+        taskList[iTask] = new Task(initialState, finalState);
+        schedule.insert(taskList[iTask]);
+      }
+
+      for( int iTask(0)
+         ;     iTask < nTask
+         ;   ++iTask ) {
+        int const iLeftTask ( (iTask + nTask - 1) % nTask );
+        int const iRightTask( (iTask + nTask + 1) % nTask );
+
+        std::stringstream ss; ss << iTask;
+
+        taskList[iTask]->insert( std::move( std::unique_ptr<ace::task::PreCondition<int>>(new detail::PreCondition
+                                  ( ss.str()
+                                  , taskList[iLeftTask]->state()
+                                  , taskList[iRightTask]->state() ) ) ) );
+        taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new detail::Executable
+                                  ( ss.str() ) ) ) );
+        taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new detail::PostCondition
+                                  ( ss.str()
+                                  , taskList[iTask]->state() ) ) ) );
+      }
+
+  //    {
+  //      bool check(left->pre_condition().check(left->state()));
+  //      std::cout << (check?"yes":"no") << std::endl;
+  //    }
+  //
+  //    {
+  //      bool check(middle->pre_condition().check(middle->state()));
+  //      std::cout << (check?"yes":"no") << std::endl;
+  //    }
+  //
+  //    {
+  //      bool check(right->pre_condition().check(right->state()));
+  //      std::cout << (check?"yes":"no") << std::endl;
+  //    }
     }
 
-    for( int iTask(0)
-       ;     iTask < nTask
-       ;   ++iTask ) {
-      int const iLeftTask ( (iTask + nTask - 1) % nTask );
-      int const iRightTask( (iTask + nTask + 1) % nTask );
 
-      std::stringstream ss; ss << iTask;
+    Executer( schedule
+            , threadPool ).execute();
 
-      taskList[iTask]->insert( std::move( std::unique_ptr<ace::task::PreCondition<int>>(new detail::PreCondition
-                                ( ss.str()
-                                , taskList[iLeftTask]->state()
-                                , taskList[iRightTask]->state() ) ) ) );
-      taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new detail::Executable
-                                ( ss.str() ) ) ) );
-      taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new detail::PostCondition
-                                ( ss.str()
-                                , taskList[iTask]->state() ) ) ) );
-    }
-
-//    {
-//      bool check(left->pre_condition().check(left->state()));
-//      std::cout << (check?"yes":"no") << std::endl;
-//    }
-//
-//    {
-//      bool check(middle->pre_condition().check(middle->state()));
-//      std::cout << (check?"yes":"no") << std::endl;
-//    }
-//
-//    {
-//      bool check(right->pre_condition().check(right->state()));
-//      std::cout << (check?"yes":"no") << std::endl;
-//    }
   }
 
-
-  Executer( schedule
-          , threadPool ).execute();
-
   {
-    ace::Timer singleTimer;
+    ace::Timer outerTimer;
+    ace::Timer innerTimer;
 
     double val(0.);
 
-    singleTimer.start();
+    outerTimer.start();
     for(int iTask(0);iTask<nTask;++iTask) {
       for(int iState(initialState);iState<finalState;++iState) {
+        innerTimer.start();
         val +=1;
         detail::nsleep(WAITTIME);
+        innerTimer.stop();
       }
     }
-    singleTimer.stop();
+    outerTimer.stop();
 
-    std::cout << "total run time : " << singleTimer.elapsedTime() << std::endl;
+    std::cout << "total run time (plain, outer) : " << outerTimer.elapsedCycles() << std::endl;
+    std::cout << "total run time (plain, inner) : " << innerTimer.elapsedCycles() << std::endl;
   }
 
-  {
+  /*{
     ace::Timer singleTimer;
 
     int const testState(0);
@@ -310,7 +312,7 @@ main
     }
     singleTimer.stop();
 
-    std::cout << "total run time direct virtual: " << singleTimer.elapsedTime() << std::endl;
+    std::cout << "total run time direct virtual: " << singleTimer.elapsedCycles() << std::endl;
   }
 
   {
@@ -331,7 +333,7 @@ main
     }
     singleTimer.stop();
 
-    std::cout << "total run time direct virtual base: " << singleTimer.elapsedTime() << std::endl;
+    std::cout << "total run time direct virtual base: " << singleTimer.elapsedCycles() << std::endl;
   }
 
   {
@@ -350,7 +352,6 @@ main
     }
     singleTimer.stop();
 
-    std::cout << "total run time direct: " << singleTimer.elapsedTime() << std::endl;
-  }
-
+    std::cout << "total run time direct: " << singleTimer.elapsedCycles() << std::endl;
+  }*/
 }

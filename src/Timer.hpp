@@ -10,6 +10,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <x86intrin.h>
 
 namespace ace {
 
@@ -20,42 +21,52 @@ namespace ace {
     Timer()
     : _tag()
     , _is_running(false)
-    , _elapsed_sec(0.)
+    , _elapsed_cycles(0.)
     {}
 
     Timer(std::string const & tag)
     : _tag(tag)
     , _is_running(false)
-    , _elapsed_sec(0.)
+    , _elapsed_cycles(0.)
     {}
 
-    void start() {
+    inline void
+    start() {
 
-      if(_is_running)
-        throw std::logic_error("Timer is already running. Cannot start timer.");
-
-      _is_running = true;
-      clock_gettime(CLOCK_MONOTONIC, &_start);
+//      if(_is_running)
+//        throw std::logic_error("Timer is already running. Cannot start timer.");
+//
+//      _is_running = true;
+//      clock_gettime(CLOCK_MONOTONIC, &_start);
+//      _elapsed_cycles -= static_cast<double>(__rdtsc());
+      _elapsed_cycles -= __rdtsc();
     }
 
-    void stop() {
-      if(!_is_running)
-        throw std::logic_error("Timer is not running. Cannot stop timer.");
-
-      _is_running = false;
-      clock_gettime(CLOCK_MONOTONIC, &_end);
-
-      _elapsed_sec += timeDiff(_end,_start);
+    inline void
+    stop() {
+//      if(!_is_running)
+//        throw std::logic_error("Timer is not running. Cannot stop timer.");
+//
+//      _is_running = false;
+//      clock_gettime(CLOCK_MONOTONIC, &_end);
+//
+//      _elapsed_sec += timeDiff(_end,_start);
+//      _elapsed_cycles += static_cast<double>(__rdtsc());
+      _elapsed_cycles += __rdtsc();
     }
 
-    double elapsedTime () {
-      return _elapsed_sec;
+    double elapsedCycles () {
+      return _elapsed_cycles;
     }
+
+//    double elapsedTime () {
+//      return _elapsed
+//    }
 
     void print() {
 
       std::cout << _tag << " timer: "
-                 << _elapsed_sec
+                 << _elapsed_cycles
                  << " s"
                  << std::endl;
     }
@@ -65,7 +76,8 @@ namespace ace {
 
     std::string const _tag;
     bool _is_running;
-    double _elapsed_sec;
+//    double _elapsed_sec;
+    long _elapsed_cycles;
 
     struct timespec _start;
     struct timespec _end;

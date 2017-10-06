@@ -67,10 +67,10 @@ ScheduleExecuter<State>
   for(int tid ( 0 )
      ;    tid < _pool.numThreads()
      ;  ++tid ) {
-    double const thread_spinLock(_spinLockTimer[tid].elapsedTime());
-    double const thread_executer(_executerTimer[tid].elapsedTime());
-    double const thread_postCond(_postCondTimer[tid].elapsedTime());
-    double const thread_totalRun(_totalRunTimer[tid].elapsedTime());
+    double const thread_spinLock(_spinLockTimer[tid].elapsedCycles());
+    double const thread_executer(_executerTimer[tid].elapsedCycles());
+    double const thread_postCond(_postCondTimer[tid].elapsedCycles());
+    double const thread_totalRun(_totalRunTimer[tid].elapsedCycles());
 
     min_spinLock = std::min(min_spinLock,thread_spinLock);
     max_spinLock = std::max(max_spinLock,thread_spinLock);
@@ -171,12 +171,15 @@ ScheduleExecuter<State>
     if ( task )
     {
       spinLockTimer.stop();
+
       executerTimer.start();
       task->execute();
       executerTimer.stop();
+
       postCondTimer.start();
       task->setPostCondition();
       postCondTimer.stop();
+
       spinLockTimer.start();
     }
     else
