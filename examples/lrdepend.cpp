@@ -8,9 +8,24 @@
 
 #include <x86intrin.h>
 
-#define WAITTIME 100
-
 namespace detail {
+
+void
+sleepCycles (long nCycles ) {
+
+  long cycleStart(__rdtsc());
+
+
+  long upperCycleLimit ( cycleStart
+                       + nCycles );
+
+  long cycle (__rdtsc() );
+
+  while ( cycle < upperCycleLimit ) {
+    cycle = __rdtsc();
+  }
+}
+
 
 void
 nsleep (long nsec ) {
@@ -29,8 +44,6 @@ nsleep (long nsec ) {
   while ( cycle < upperCycleLimit ) {
     cycle = __rdtsc();
   }
-
-
 }
 
 class PreCondition
@@ -112,8 +125,10 @@ class Executable
   public:
 
     Executable
-      (std::string const & name)
+      ( std::string const & name
+      , long waittime )
     : _name(name)
+    , _waittime(waittime)
     , _pVar( new int [16] )
     , _var (_pVar[0])
     , _time()
@@ -141,17 +156,18 @@ class Executable
 //                << std::endl;
       _time.start();
       _var+=1;
-      nsleep(WAITTIME);
+      sleepCycles(_waittime);
       _time.stop();
     }
 
   private:
 
     std::string const _name;
+    long        const _waittime;
 
     std::unique_ptr<int[]> _pVar;
     int &                  _var;
-    ace::Timer       _time;
+    ace::Timer             _time;
 
 };
 
@@ -160,8 +176,10 @@ class ExecutableDirect {
   public:
 
     ExecutableDirect
-      (std::string const & name)
+      (std::string const & name
+      , long waittime )
     : _name(name)
+    , _waittime(waittime)
     , _var (0)
     , _time()
     {}
@@ -189,15 +207,16 @@ class ExecutableDirect {
       _time.start();
       _var+=1;
 //      usleep(1);
-      nsleep(WAITTIME);
+      sleepCycles(_waittime);
       _time.stop();
     }
 
   private:
 
     std::string const _name;
+    long        const _waittime;
 
-    int _var;
+    int         _var;
     ace::Timer _time;
 
 };
@@ -206,8 +225,22 @@ class ExecutableDirect {
 
 int
 main
-  ( int /*argc*/
-  , char */*argv*/[] ) {
+  ( int argc
+  , char *argv[] ) {
+
+  if( argc != 4 ) {
+    throw std::runtime_error
+      ("use as lrdepend <nWait> <nTask> <nThread>");
+  }
+
+  int const nWait  (atoi(argv[1]));
+  int const nTask  (atoi(argv[2]));
+  int const nThread(atoi(argv[3]));
+
+  std::cout << "starting with "
+            << nWait << " wait cycles per Task on "
+            << nTask << " tasks on "
+            << nThread << " threads" << std::endl;
 
   using State = int;
   using Task = ace::task::Task<State>;
@@ -215,12 +248,10 @@ main
   using Executer = ace::schedule::ScheduleExecuter<State>;
   using ThreadPool = ace::thread::Pool;
 
-  ThreadPool threadPool(1,ace::thread::PIN_EVEN);
+  ThreadPool threadPool(nThread,ace::thread::PIN_EVEN);
 
   State initialState(0);
   State finalState(10000);
-
-  int const nTask(18);
 
   {
     Schedule schedule;
@@ -247,7 +278,7 @@ main
                                   , taskList[iLeftTask]->state()
                                   , taskList[iRightTask]->state() ) ) ) );
         taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new detail::Executable
-                                  ( ss.str() ) ) ) );
+                                  ( ss.str(), nWait) ) ) );
         taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new detail::PostCondition
                                   ( ss.str()
                                   , taskList[iTask]->state() ) ) ) );
@@ -286,7 +317,7 @@ main
       for(int iState(initialState);iState<finalState;++iState) {
         innerTimer.start();
         val +=1;
-        detail::nsleep(WAITTIME);
+        detail::nsleep(nWait);
         innerTimer.stop();
       }
     }
