@@ -118,7 +118,7 @@ private:
   alignas(CACHELINESIZE) State state_;
   alignas(CACHELINESIZE) State final_;
 
-  Status status_;
+  alignas(CACHELINESIZE) Status status_;
 };
 
 
