@@ -39,7 +39,7 @@ class Task
 
 public:
 
-  enum Status {FREE, IN_USE, FINISHED};
+  enum class Status : int {FREE = 1, IN_USE = 2, FINISHED = 3};
 
   Task
     ( State const & initialState
@@ -47,7 +47,7 @@ public:
   : TaskDef<State>()
   , state_(initialState)
   , final_(finalState)
-  , status_(FREE)
+  , status_(Status::FREE)
   { }
 
   ~Task
@@ -69,8 +69,8 @@ public:
     }
 
     status_ = ( finished()
-              ? FINISHED
-              : FREE );
+              ? Status::FINISHED
+              : Status::FREE );
   }
 
   inline bool

@@ -185,9 +185,11 @@ ScheduleExecuter<State>
 
   spinLockTimer.start();
 
+  typename Schedule<State>::iterator spin( schedule.begin() );
+
   while (!finished)
   {
-    task::Task<State>* const task( schedule.get_executable_Task() );
+    task::Task<State>* const task( schedule.get_executable_Task(spin) );
 
     if ( task )
     {

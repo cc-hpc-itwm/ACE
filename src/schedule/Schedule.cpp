@@ -28,7 +28,6 @@ template <typename State>
 Schedule<State>
 	::Schedule()
   :  tasklist_()
-  ,  spin_(tasklist_.begin())
 { }
 
 template <typename State>
@@ -39,9 +38,9 @@ Schedule<State>
 
   for (Iter iter (tasklist_.begin())
       ;     iter != tasklist_.end()
-      ;   ++iter )
-  {
-    delete (*iter);   // members executable_ and (if present) condition_ are deleted in a Task destructor.
+      ;   ++iter ) {
+    delete (*iter);   // members executable_ and (if present)
+                      // condition_ are deleted in a Task destructor.
   }
 }
 
@@ -57,53 +56,81 @@ Schedule<State>
 }
 
 template <typename State>
+typename Schedule<State>::iterator
+Schedule<State>
+  ::begin
+   () {
+  return tasklist_.begin();
+}
+
+template <typename State>
+task::Task<State> *
+Schedule<State>
+  ::getAndLockNextFreeTask
+   (iterator & spin_) {
+
+  task::Task<State>* task_in_use(nullptr);
+  {
+    if ( tasklist_.end() == spin_ ) {
+      spin_ = tasklist_.begin();
+    }
+    // here: spin_ is a valid, nonsingular iterator.
+
+    iterator const old_spin(spin_);
+
+    do {
+      ++spin_;
+      if ( tasklist_.end() == spin_ ) {
+        spin_ = tasklist_.begin();
+      }
+
+      using Status = typename task::Task<State>::Status;
+
+      if((*spin_)->status() == Status::FREE) {
+
+        Status expected(Status::FREE);
+        Status desired (Status::IN_USE);
+
+        int * const pExpectedL(reinterpret_cast<int*>(&expected));
+        int * const pDesiredL (reinterpret_cast<int*>(&desired));
+        int * const pValueL   (reinterpret_cast<int*>(&(*spin_)->status()));
+
+        if(__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL)) {
+          task_in_use = *spin_;
+          break;
+        }
+      }
+
+    } while ( spin_ != old_spin );
+
+    // no Task with status FREE could be found, so all of them are IN_USE
+    // or FINISHED. So, we  return nullptr;
+  }
+
+  return task_in_use;
+
+}
+
+template <typename State>
 task::Task<State>*
 Schedule<State>
-	::get_executable_Task()
+	::get_executable_Task(iterator & spin)
 {
   // assumption here: tasklist_ is not modified concurrently when getExecutable() is called
   /// \todo make clear documentation about concurrency assumptions here
   if (tasklist_.empty())
   {
-    return 0;
+    return nullptr;
   }
 
   while(true)
   {
-    task::Task<State>* task_in_use;
-    {
-      LockGuard lock(_mutex);
 
-      if ( tasklist_.end() == spin_ )
-      {
-        spin_ = tasklist_.begin();
-      }
-      // here: spin_ is a valid, nonsingular iterator.
+    task::Task<State>* task_in_use
+      ( getAndLockNextFreeTask(spin) );
 
-      typedef typename Tasklist::iterator Iter;
-
-      Iter const old_spin(spin_);
-
-      do
-      {
-        ++spin_;
-        if ( tasklist_.end() == spin_ )
-        {
-          spin_ = tasklist_.begin();
-        }
-      } while (   ((*spin_)->status() != task::Task<State>::FREE)
-               && (spin_ != old_spin)             );
-
-      if ((*spin_)->status() != task::Task<State>::FREE)
-      {
-        // no Task with status FREE could be found, so all of them are IN_USE
-        // or FINISHED.
-        return nullptr;
-      }
-
-      (*spin_)->status() = task::Task<State>::IN_USE;
-      task_in_use = *spin_;
-      // lock goes out of scope here
+    if( !task_in_use) {
+      return task_in_use;
     }
 
     if (task_in_use->ready_to_execute())
@@ -112,9 +139,11 @@ Schedule<State>
     }
     else
     {
+      using Status = typename task::Task<State>::Status;
+
       task_in_use->status() = ( task_in_use->finished()
-                              ? task::Task<State>::FINISHED
-                              : task::Task<State>::FREE );
+                              ? Status::FINISHED
+                              : Status::FREE );
       // loop on, try again in the next loop
     }
 

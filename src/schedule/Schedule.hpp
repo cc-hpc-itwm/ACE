@@ -53,13 +53,10 @@ namespace schedule {
 template <typename State>
 class Schedule {
 
-	public:
-
-//	  struct Priority {
-//		  enum Type {LOW,HIGH};
-//	  };
-
     public:
+
+      using iterator = typename std::list<task::Task<State>*>::iterator;
+
       /** \brief initialise the schedule */
       Schedule();
 
@@ -70,7 +67,15 @@ class Schedule {
       /** \brief insert another work package into the schedule */
       void
       insert
-        (task::Task<State>* task /*, Priority::Type priority = Priority::LOW*/ );
+        (task::Task<State>* task);
+
+      iterator
+      begin
+        ();
+
+      task::Task<State> *
+      getAndLockNextFreeTask
+        (iterator & hint);
 
       /** \brief retrieve an executable task
        *
@@ -84,15 +89,14 @@ class Schedule {
        * \todo Why should the full Task* be returned? Return an Executable* instead?
        */
       task::Task<State> *
-      get_executable_Task();
+      get_executable_Task
+        (iterator & hint);
 
     private:
+
       typedef std::list<task::Task<State>*>  Tasklist;
 
-    private:
-
       Tasklist tasklist_;
-      typename Tasklist::iterator spin_;
 
       thread::Mutex _mutex;
 };
