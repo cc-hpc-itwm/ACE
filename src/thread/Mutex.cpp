@@ -19,8 +19,8 @@
  *
  */
 
-#include <thread/Macros.hpp>
-#include <thread/Mutex.hpp>
+#include <ACE/thread/Macros.hpp>
+#include <ACE/thread/Mutex.hpp>
 
 namespace ace {
 

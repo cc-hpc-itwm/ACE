@@ -15,56 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with ACE. If not, see <http://www.gnu.org/licenses/>.
  *
- * Executor.hpp
+ * LockGuard.h
  *
  */
 
-#ifndef SCHEDULEEXECUTER_H_
-#define SCHEDULEEXECUTER_H_
+#ifndef LOCKGUARD_HPP_
+#define LOCKGUARD_HPP_
 
-#include <schedule/Schedule.hpp>
-#include <thread/Pool.hpp>
-#include <Timer.hpp>
-#include <vector>
+#include <ACE/thread/Mutex.hpp>
 
 namespace ace {
-namespace schedule {
 
-template <typename State>
-class ScheduleExecuter {
-
+//! Simple lock guard for Pthread mutexes
+class LockGuard
+{
 public:
+  LockGuard(thread::Mutex & mutex);
 
-  ScheduleExecuter
-    ( Schedule<State> &
-    , thread::Pool & );
-
-  void
-  execute();
+  ~LockGuard();
 
 private:
-
-  static void
-  execute
-    (int, void *);
-
-  struct t_parameter {
-
-      Schedule<State> & schedule;
-  };
-
-  Schedule<State> & _schedule;
-  thread::Pool & _pool;
-
-  std::vector<Timer> _totalRunTimer;
-  std::vector<Timer> _spinLockTimer;
-  std::vector<Timer> _executerTimer;
-  std::vector<Timer> _postCondTimer;
+  thread::Mutex & _mutex;
 };
 
-} // namespace schedule
 } // namespace ace
 
-#include <schedule/Executor.cpp>
-
-#endif /* SCHEDULEEXECUTER_H_ */
+#endif /* LOCKGUARD_HPP_ */

@@ -20,8 +20,8 @@
  */
 
 #include <pthread.h>
-#include <thread/Barrier.hpp>
-#include <thread/Macros.hpp>
+#include <ACE/thread/Barrier.hpp>
+#include <ACE/thread/Macros.hpp>
 
 namespace ace {
 namespace thread {

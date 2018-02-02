@@ -1,12 +1,9 @@
+# Define library. Only source files here!
+project(libACE LANGUAGES CXX)
+
 #Create a library called "Hello" which includes the source file "hello.icxx".
 # The extension is already found. Any number of sources could be listed here.
 add_library ( ACE 
-#	      scheduler_Schedule.cpp
-#	      scheduler_Table.cpp
-#	      scheduler_Thread.cpp
-#	      scheduler_Threading.cpp
-#	      scheduler_Timers.cpp
-#	      ScheduleExecuter.cpp
 	      thread/Barrier.cpp
 	      thread/Exception.cpp
 	      thread/Mutex.cpp
@@ -15,8 +12,23 @@ add_library ( ACE
 	      utility/LockGuard.cpp
 	      )
 
-# Make sure the compiler can find include files for our Hello library
-# when other libraries or executables link to Hello
-target_include_directories (ACE 
-	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include 
-	       ${CMAKE_CURRENT_SOURCE_DIR} )
+# Define headers for this library. PUBLIC headers are used for
+# compiling the library, and will be added to consumers' build
+# paths.
+target_include_directories(ACE 
+	PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+   	       $<INSTALL_INTERFACE:include>
+   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(ACE
+	pthread)
+
+# 'make install' to the correct locations (provided by GNUInstallDirs).
+install(TARGETS ACE EXPORT ACEConfig
+	ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# This makes the project importable from the build directory
+export(TARGETS ACE FILE ACEConfig.cmake)

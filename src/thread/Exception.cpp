@@ -20,7 +20,7 @@
  */
 
 #include <sstream>
-#include <thread/Exception.hpp>
+#include <ACE/thread/Exception.hpp>
 
 namespace ace {
 

@@ -23,10 +23,10 @@
 #define THREADPOOL_HPP_
 
 #include <memory>
-#include <thread/Barrier.hpp>
-#include <thread/Mutex.hpp>
-#include <thread/PinningMode.hpp>
-#include <thread/Thread.hpp>
+#include <ACE/thread/Barrier.hpp>
+#include <ACE/thread/Mutex.hpp>
+#include <ACE/thread/PinningMode.hpp>
+#include <ACE/thread/Thread.hpp>
 
 namespace ace {
 namespace thread {

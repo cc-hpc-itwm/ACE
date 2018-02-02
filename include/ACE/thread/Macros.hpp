@@ -20,19 +20,51 @@
  */
 
 #include <stdexcept>
+#include <sstream>
 
 namespace ace {
 namespace thread {
+
+namespace macro_detail {
+
+struct CodeOriginString : public std::string
+{
+  CodeOriginString (const char* s, const int i) : std::string ()
+  {
+    std::ostringstream oss;
+    oss << s << " [" << i << "]: ";
+
+    assign (oss.str());
+  }
+};
+
+}
+
+// macro definitions
+
+#define CODE_ORIGIN macro_detail::CodeOriginString (__PRETTY_FUNCTION__, __LINE__)
+
 
 //! An exception for failed Pthread API calls
 class PthreadError
     : public std::exception {
 
+  public:
+
+    PthreadError
+      (std::string const & errMsg = std::string())
+    : errMsg_(errMsg)
+  {}
+
   virtual const char*
   what
     () const throw() {
-    return "An error occurred during a call to the Pthreads API!";
+    return errMsg_.c_str();
   }
+
+  private:
+
+    std::string errMsg_;
 
 };
 
@@ -45,5 +77,5 @@ class PthreadError
 // in performance critical parts of the code.
 #define PTHREAD_CHECK(X)                                                       \
   if((X) != 0) {                                                               \
-    throw ace::thread::PthreadError();                                   \
+    throw ace::thread::PthreadError(CODE_ORIGIN);                              \
   }

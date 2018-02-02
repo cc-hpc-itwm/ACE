@@ -23,9 +23,9 @@
 #define SCHEDULER_TASKDEF_H_
 
 #include <memory>
-#include <task/Executable.hpp>
-#include <task/PostCondition.hpp>
-#include <task/PreCondition.hpp>
+#include <ACE/task/Executable.hpp>
+#include <ACE/task/PostCondition.hpp>
+#include <ACE/task/PreCondition.hpp>
 
 namespace ace {
 namespace task {

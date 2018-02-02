@@ -19,13 +19,9 @@
  *
  */
 
-#include <thread/Pool.hpp>
-#include <thread/Exception.hpp>
-#include <thread/Thread.hpp>
-//#include <implementation/implementationDetails.hpp>
-//#include <memory/AllocatorAlignmentProxy.hpp>
-//#include <memory/NumaAllocator.hpp>
-//#include <memory/SegmentBlockAllocator.hpp>
+#include <ACE/thread/Pool.hpp>
+#include <ACE/thread/Exception.hpp>
+#include <ACE/thread/Thread.hpp>
 
 #include <algorithm>
 #include <cstring>   // for std::memset()

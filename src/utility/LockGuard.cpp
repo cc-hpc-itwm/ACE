@@ -19,7 +19,7 @@
  *
  */
 
-#include <utility/LockGuard.h>
+#include <ACE/utility/LockGuard.h>
 
 namespace ace {
 

@@ -22,11 +22,8 @@
 #ifndef THREAD_EXCEPTION_H_
 #define THREAD_EXCEPTION_H_
 
-#include <pthread.h>
 #include <stdexcept>
 #include <string>
-#include <utility/Optional.hpp>
-#include <set>
 
 namespace ace {
 

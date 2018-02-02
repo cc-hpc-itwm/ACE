@@ -18,8 +18,8 @@
  * Schedule.cpp
  *
  */
-#include <schedule/Schedule.hpp>
-#include <utility/LockGuard.h>
+#include <ACE/schedule/Schedule.hpp>
+#include <ACE/utility/LockGuard.h>
 
 namespace ace {
 namespace schedule {

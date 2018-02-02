@@ -1,6 +1,6 @@
-#include <schedule/Executor.hpp>
-#include <schedule/Schedule.hpp>
-#include <task/Task.hpp>
+#include <ACE/schedule/Executor.hpp>
+#include <ACE/schedule/Schedule.hpp>
+#include <ACE/task/Task.hpp>
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
@@ -248,7 +248,7 @@ main
   using Executer = ace::schedule::ScheduleExecuter<State>;
   using ThreadPool = ace::thread::Pool;
 
-  ThreadPool threadPool(nThread,ace::thread::PIN_EVEN);
+  ThreadPool threadPool(nThread,ace::thread::PIN_1TO1);
 
   State initialState(0);
   State finalState(10000);

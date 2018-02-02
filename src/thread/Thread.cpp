@@ -20,9 +20,9 @@
  */
 
 #include <pthread.h>
-#include <thread/Exception.hpp>
-#include <thread/Macros.hpp>
-#include <thread/Thread.hpp>
+#include <ACE/thread/Exception.hpp>
+#include <ACE/thread/Macros.hpp>
+#include <ACE/thread/Thread.hpp>
 
 namespace ace {
 namespace thread {

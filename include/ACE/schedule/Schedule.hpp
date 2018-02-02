@@ -23,8 +23,8 @@
 #define SCHEDULER_SCHEDULE_H 1
 
 #include <list>
-#include <task/Task.hpp>
-#include <thread/Mutex.hpp>
+#include <ACE/task/Task.hpp>
+#include <ACE/thread/Mutex.hpp>
 
 namespace ace {
 namespace schedule {
@@ -104,6 +104,6 @@ class Schedule {
 }  // namespace schedule
 }  // namespace ace
 
-#include <schedule/Schedule.cpp>
+#include <ACE/schedule/Schedule_impl.hpp>
 
 #endif    // SCHEDULER_SCHEDULE_H
