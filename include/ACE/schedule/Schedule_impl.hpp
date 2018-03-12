@@ -76,6 +76,8 @@ Schedule<State>
     }
     // here: spin_ is a valid, nonsingular iterator.
 
+    bool isFinished (false);
+    std::size_t nFinishedTasks(0);
     iterator const old_spin(spin_);
 
     do {
@@ -101,7 +103,18 @@ Schedule<State>
         }
       }
 
-    } while ( spin_ != old_spin );
+      if((*spin_)->status() == Status::FINISHED) {
+        ++nFinishedTasks;
+      }
+
+      if( spin_ == old_spin ) {
+        if(nFinishedTasks == tasklist_.size()) {
+          isFinished = true;
+        }
+        nFinishedTasks = 0;
+      }
+
+    } while ( !isFinished );
 
     // no Task with status FREE could be found, so all of them are IN_USE
     // or FINISHED. So, we  return nullptr;
