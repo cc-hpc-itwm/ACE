@@ -60,6 +60,7 @@ private:
   std::vector<Timer> _spinLockTimer;
   std::vector<Timer> _executerTimer;
   std::vector<Timer> _postCondTimer;
+  std::vector<size_t> _taskExecCounter;
 };
 
 } // namespace schedule

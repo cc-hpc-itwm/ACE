@@ -36,6 +36,7 @@ ScheduleExecuter<State>
 , _spinLockTimer(_pool.numThreads())
 , _executerTimer(_pool.numThreads())
 , _postCondTimer(_pool.numThreads())
+, _taskExecCounter(_pool.numThreads(),0)
 {}
 
 template <typename State>
@@ -57,12 +58,15 @@ ScheduleExecuter<State>
   double const max(std::numeric_limits<double>::max());
   double min_spinLock(+max); double min_totalRun(+max);
   double min_executer(+max); double min_postCond(+max);
+  double min_execCount(+max);
 
   double max_spinLock(-max); double max_totalRun(-max);
   double max_executer(-max); double max_postCond(-max);
+  double max_execCount(-max);
 
   double avg_spinLock(0.); double avg_totalRun(0.);
   double avg_executer(0.); double avg_postCond(0.);
+  double avg_execCount(0.);
 
   for(int tid ( 0 )
      ;    tid < _pool.numThreads()
@@ -71,6 +75,7 @@ ScheduleExecuter<State>
     double const thread_executer(_executerTimer[tid].elapsedCycles());
     double const thread_postCond(_postCondTimer[tid].elapsedCycles());
     double const thread_totalRun(_totalRunTimer[tid].elapsedCycles());
+    double const thread_execCount(_taskExecCounter[tid]);
 
     min_spinLock = std::min(min_spinLock,thread_spinLock);
     max_spinLock = std::max(max_spinLock,thread_spinLock);
@@ -87,6 +92,10 @@ ScheduleExecuter<State>
     min_totalRun = std::min(min_totalRun,thread_totalRun);
     max_totalRun = std::max(max_totalRun,thread_totalRun);
     avg_totalRun += thread_totalRun / static_cast<double>(_pool.numThreads());
+
+    min_execCount = std::min(min_execCount,thread_execCount);
+    max_execCount = std::max(max_execCount,thread_execCount);
+    avg_execCount += thread_execCount / static_cast<double>(_pool.numThreads());
   }
 
   std::cout << "schedule execution statistics:" << std::endl;
@@ -153,6 +162,15 @@ ScheduleExecuter<State>
             << "%"
             << std::endl;
 
+  std::cout << "\ttask execution count : "
+            << avg_execCount
+            << " ["
+            << min_execCount
+            << ", "
+            << max_execCount
+            << "]"
+            << std::endl;
+
   std::cout << std::endl;
 
 }
@@ -179,6 +197,9 @@ ScheduleExecuter<State>
   Timer & spinLockTimer
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_spinLockTimer[tid] );
 
+  size_t & taskExecCounter
+    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_taskExecCounter[tid] );
+
   bool finished(false);
 
   totalRunTimer.start();
@@ -197,6 +218,7 @@ ScheduleExecuter<State>
 
       executerTimer.start();
       task->execute();
+      ++taskExecCounter;
       executerTimer.stop();
 
       postCondTimer.start();
