@@ -41,7 +41,9 @@ class PreCondition {
 
     virtual bool
     check
-      ( State const & state) const  = 0 ;
+      ( State const & state
+      , State const & first
+      , State const & final ) const  = 0 ;
 
 };
 
@@ -76,11 +78,13 @@ class PreConditionList
 
     virtual bool
     check
-      ( State const & state) const {
+      ( State const & state
+      , State const & first
+      , State const & final ) const {
       bool retval(true);
 
       for (auto &i: conditions_) {
-        if (! i->check(state) ) {
+        if (! i->check(state,first,final) ) {
           retval = false;
           break;
         }

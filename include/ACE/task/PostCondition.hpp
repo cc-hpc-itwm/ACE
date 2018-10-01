@@ -39,7 +39,10 @@ class PostCondition
     }
 
     virtual void
-    set(State const &) = 0;
+    set
+      ( State const & state
+      , State const & first
+      , State const & final ) = 0;
 };
 
 template <typename State>
@@ -71,9 +74,12 @@ class PostConditionList
     }
 
     virtual void
-    set(State const & state) {
+    set
+      ( State const & state
+      , State const & first
+      , State const & final ) {
       for (auto &i: conditions_) {
-        i->set(state);
+        i->set(state,first,final);
       }
     }
 

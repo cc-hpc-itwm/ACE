@@ -46,6 +46,7 @@ public:
     , State const & finalState )
   : TaskDef<State>()
   , state_(initialState)
+  , first_(initialState)
   , final_(finalState)
   , status_(Status::FREE)
   { }
@@ -58,14 +59,14 @@ public:
   execute
     () {
     if(TaskDef<State>::hasExecutable()) {
-       TaskDef<State>::getExecutable().execute(state_);
+       TaskDef<State>::getExecutable().execute(state_,first_,final_);
     }
   }
 
   inline void
   setPostCondition() {
     if( TaskDef<State>::hasPostCondition() ) {
-        TaskDef<State>::getPostCondition().set(state_);
+        TaskDef<State>::getPostCondition().set(state_,first_,final_);
     }
 
     status_ = ( finished()
@@ -78,7 +79,7 @@ public:
     () const
   {
     return ( not(TaskDef<State>::hasPreCondition()) ||
-                (TaskDef<State>::getPreCondition().check(state_)) );
+                (TaskDef<State>::getPreCondition().check(state_,first_,final_)) );
   }
 
   inline State &
@@ -98,7 +99,7 @@ public:
   finished
     () const {
     return (   state_
-            >= final_ );
+            == final_ );
   }
 
   inline Status const &
@@ -116,6 +117,7 @@ public:
 private:
 
   alignas(CACHELINESIZE) State state_;
+  alignas(CACHELINESIZE) State first_;
   alignas(CACHELINESIZE) State final_;
 
   alignas(CACHELINESIZE) Status status_;

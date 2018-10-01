@@ -39,7 +39,9 @@ public:
 
   virtual void
   execute
-    ( State const & ) = 0;
+    ( State const & state
+    , State const & first
+    , State const & final ) = 0;
 
 };
 
@@ -75,9 +77,12 @@ class ExecutableList
     }
 
     virtual void
-    execute( State const & state ) {
+    execute
+      ( State const & state
+      , State const & first
+      , State const & final ) {
       for ( auto &i: executables_) {
-        i->execute(state);
+        i->execute(state,first,final);
       }
     }
 
