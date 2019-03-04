@@ -40,7 +40,8 @@ public:
     , thread::Pool & );
 
   void
-  execute();
+  execute
+    (bool const printTimingInfo = false);
 
 private:
 
