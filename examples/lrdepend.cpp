@@ -64,7 +64,10 @@ class PreCondition
     ~PreCondition() {}
 
     virtual bool
-    check(int const & state) const {
+    check
+      ( int const & state
+      , int const & /*first*/
+      , int const & /*final*/ ) const {
 
 //      std::stringstream ss;
 //
@@ -102,7 +105,10 @@ class PostCondition
     ~PostCondition() {}
 
     virtual void
-    set(int const & state) {
+    set
+      ( int const & state
+      , int const & /*first*/
+      , int const & /*final*/ ) {
 //       std::stringstream ss;
 //
 //       ss << "post-cond set of " << _name << ": ";
@@ -148,7 +154,10 @@ class Executable
     }
 
     virtual void
-    execute(int const & /*state*/) {
+    execute
+      ( int const & /*state*/
+      , int const & /*first*/
+      , int const & /*final*/ ) {
 //      std::cout << "execute of "
 //                << _name
 //                << ": "
@@ -198,7 +207,10 @@ class ExecutableDirect {
     }
 
     inline void
-    execute(int const & /*state*/) {
+    execute
+      ( int const & /*state*/
+      , int const & /*first*/
+      , int const & /*final*/ ) {
 //      std::cout << "execute of "
 //                << _name
 //                << ": "
