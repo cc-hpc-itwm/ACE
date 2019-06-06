@@ -183,33 +183,6 @@ namespace thread {
 //    memory::AllocatorAlignmentProxy<char,memory::NumaAllocator> &
 //    getPinnedAllocator() const;
 
-//    // Give the kernels for global reduction operations access to
-//    // the shared memory segment.
-//    template <class S>
-//    static S
-//    globalReducePlus
-//      ( int                  threadID
-//      , ThreadPool           &pool
-//      , const GASPIInterface &interface
-//      , S                    value);
-//
-//    template <class S>
-//    static inline void
-//    globalReducePlus
-//      ( int                  threadID
-//      , ThreadPool           &pool
-//      , const GASPIInterface &interface
-//      , S * const            localValues
-//      , S * const            globalValues
-//      , int                  numValues );
-//
-//    template <class S>
-//    static S
-//    globalReduceMax
-//      ( ThreadPool           &pool
-//      , const GASPIInterface &interface
-//      , S                    value);
-
     //! Some (public) counters to be shared among all threads
     volatile size_t counter0;
     volatile size_t counter1;
