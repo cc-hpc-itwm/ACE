@@ -46,20 +46,24 @@ public:
 
   ~MemoryResource();
 
-  virtual void *
+  void *
   do_allocate
     ( std::size_t bytes
-    , std::size_t alignment );
+    , std::size_t alignment ) override;
 
-  virtual void
+  void
   do_deallocate
     ( void* p
     , std::size_t bytes
-    , std::size_t alignment );
+    , std::size_t alignment ) override;
 
-  virtual bool
+  bool
   do_is_equal
-  ( const device::MemoryResource& other ) const noexcept;
+  ( const device::MemoryResource& other ) const noexcept override;
+
+  bool
+  operator==
+    (const MemoryResource& other) const noexcept;
 
 private:
 

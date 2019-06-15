@@ -29,6 +29,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <set>
+#include <typeindex>
 #include <iostream>
 
 namespace ace {
@@ -172,7 +173,27 @@ MemoryResource
 bool
 MemoryResource
   ::do_is_equal( const device::MemoryResource& other ) const noexcept
-{ }
+{
+  if( typeid(*this) != typeid(other) )
+    return false;
+
+  return operator==(dynamic_cast<const MemoryResource&>(other) );
+}
+
+bool
+MemoryResource
+  ::operator==( const MemoryResource& other ) const noexcept
+{
+  if(_numa_available != other._numa_available)
+    return false;
+
+  if(_numa_available) {
+    if(!numa_bitmask_equal(_pnodemask,other._pnodemask))
+      return false;
+  }
+
+  return true;
+}
 
 }
 }
