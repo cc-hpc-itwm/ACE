@@ -4,6 +4,11 @@ project(libACE LANGUAGES CXX)
 #Create a library called "Hello" which includes the source file "hello.icxx".
 # The extension is already found. Any number of sources could be listed here.
 add_library ( ACE 
+	      device/Device.cpp
+	      device/MemoryResource.cpp
+	      device/numa/Device.cpp
+	      device/numa/MemoryResource.cpp
+	      device/numa/Scheduler.cpp
 	      thread/Barrier.cpp
 	      thread/Exception.cpp
 	      thread/Mutex.cpp
@@ -21,7 +26,8 @@ target_include_directories(ACE
    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(ACE
-	pthread)
+	pthread
+	numa)
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
 install(TARGETS ACE EXPORT ACEConfig

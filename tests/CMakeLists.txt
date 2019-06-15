@@ -3,6 +3,8 @@ find_package(GTest REQUIRED)
   
 add_executable ( run_tests
       run_tests.cpp
+      DeviceTest.cpp
+      MemoryResourceTest.cpp
       )
 
 target_include_directories (run_tests PRIVATE 
