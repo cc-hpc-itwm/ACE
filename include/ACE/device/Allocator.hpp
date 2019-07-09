@@ -87,7 +87,7 @@ class Allocator
       return !(*this == rhs);
     }
 
-    MemoryResource * const
+    MemoryResource *
     resource() const {
       return _resource;
     }

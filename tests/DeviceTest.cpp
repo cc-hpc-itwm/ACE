@@ -142,16 +142,16 @@ class DeviceTest : public ::testing::Test
 
 
     std::size_t nTask(_taskList.size());
-    for( int iTask(0)
-       ;     iTask < nTask
-       ;   ++iTask ) {
+    for( std::size_t iTask(0)
+       ;             iTask < nTask
+       ;           ++iTask ) {
       _taskList[iTask] = new Task(_initialState, _finalState);
       _schedule.insert(_taskList[iTask]);
     }
 
-    for( int iTask(0)
-       ;     iTask < nTask
-       ;   ++iTask ) {
+    for( std::size_t iTask(0)
+       ;             iTask < nTask
+       ;           ++iTask ) {
       int const iLeftTask ( (iTask + nTask - 1) % nTask );
       int const iRightTask( (iTask + nTask + 1) % nTask );
 
@@ -175,9 +175,9 @@ TEST_F(DeviceTest, run)
 
   device.scheduler<State>().execute(_schedule);
 
-  for(int iVar(0)
-     ;    iVar < _vars.size()
-     ;  ++iVar )
+  for(std::size_t iVar(0)
+     ;            iVar < _vars.size()
+     ;          ++iVar )
   {
     EXPECT_EQ
       ( _finalState

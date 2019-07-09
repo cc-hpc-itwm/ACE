@@ -85,18 +85,28 @@ private:
     make_copy
       (SchedulerInterface<OtherState> const * const pScheduler )
     {
+      std::unique_ptr<SchedulerInterface<State>> pSchedulerCopy;
+
       switch (pScheduler->device_type())
         {
           case Type::NUMA:
-            return std::unique_ptr<SchedulerInterface<State>>
-                ( new numa::Scheduler<OtherState>
-                  ( dynamic_cast<const numa::Scheduler<OtherState>&>
-                   (*pScheduler)
-                  )
-                );
+          {
+            pSchedulerCopy.reset
+              ( new numa::Scheduler<OtherState>
+                ( dynamic_cast<const numa::Scheduler<OtherState>&>
+                 (*pScheduler)
+                )
+              );
+            break;
+          }
+          default:
+          {
+            throw std::runtime_error
+              (CODE_ORIGIN + "Device type not supported yet");
+          }
         }
 
-        throw std::runtime_error (CODE_ORIGIN + "failed");
+      return pSchedulerCopy;
     }
 
     std::unique_ptr<SchedulerInterface<State>> _pScheduler;
