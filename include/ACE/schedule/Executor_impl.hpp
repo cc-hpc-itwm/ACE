@@ -102,6 +102,7 @@ ScheduleExecuter<State>
     }
 
     std::cout << "schedule execution statistics:" << std::endl;
+    std::cout << "\tnumber of tasks: " << _schedule.size() << std::endl;
 
     double const avg_totalRunC
       (avg_executer + avg_postCond + avg_spinLock);

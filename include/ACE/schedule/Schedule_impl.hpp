@@ -167,5 +167,13 @@ Schedule<State>
 
 }
 
+template <typename State>
+std::size_t
+Schedule<State>
+    ::size() const
+{
+  return tasklist_.size();
+}
+
 }  // namespace schedule
 }  // namespace ace

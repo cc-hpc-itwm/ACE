@@ -92,6 +92,9 @@ class Schedule {
       get_executable_Task
         (iterator & hint);
 
+      std::size_t
+      size() const;
+
     private:
 
       typedef std::list<task::Task<State>*>  Tasklist;
