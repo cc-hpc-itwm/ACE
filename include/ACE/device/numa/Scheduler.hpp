@@ -80,6 +80,11 @@ public:
     : SchedulerRuntime(id)
     {}
 
+    template <typename OtherState>
+    Scheduler
+      (Scheduler<OtherState> const & scheduler)
+    : SchedulerRuntime(scheduler)
+    {}
 
     Type
     device_type() const override

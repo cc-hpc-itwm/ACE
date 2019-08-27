@@ -44,6 +44,9 @@ namespace device {
 template <typename State>
 class Scheduler : public SchedulerInterface<State>{
 
+    template <typename OtherState>
+    friend class Scheduler;
+
 public:
 
     Scheduler() = delete;
@@ -92,7 +95,7 @@ private:
           case Type::NUMA:
           {
             pSchedulerCopy.reset
-              ( new numa::Scheduler<OtherState>
+              ( new numa::Scheduler<State>
                 ( dynamic_cast<const numa::Scheduler<OtherState>&>
                  (*pScheduler)
                 )
