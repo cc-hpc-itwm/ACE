@@ -34,10 +34,6 @@ class Device {
 
 public:
 
-    Device
-      ( std::unique_ptr<MemoryResource> pMemoryResource
-      , std::unique_ptr<SchedulerInterface<int>> pScheduler );
-
     template <typename T = void>
     Allocator<T>
     allocator() const
@@ -53,6 +49,12 @@ public:
     {
       return Scheduler<State>(_scheduler);
     }
+
+protected:
+
+    Device
+      ( std::unique_ptr<MemoryResource> pMemoryResource
+      , std::unique_ptr<SchedulerInterface<int>> pScheduler );
 
 private:
 
