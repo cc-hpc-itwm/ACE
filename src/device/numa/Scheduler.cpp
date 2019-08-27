@@ -53,16 +53,16 @@ get_affinity_mask (const int sock, cpu_set_t * cpuset)
   //read cpumap
   int id = 0;
   if( fgets(buf, sizeof(buf), f) )
-    {
-      char *bptr = buf;
+  {
+    char *bptr = buf;
 
-      while (1)
+    while (1)
     {
       int ret = sscanf (bptr, "%x", &m[id]);
       if( ret <= 0 )
-        {
+      {
           break;
-        }
+      }
 
       int found = 0;
       unsigned int cpos = 0;
@@ -71,14 +71,14 @@ get_affinity_mask (const int sock, cpu_set_t * cpuset)
       size_t j;
 
       for(j = 0;j < length - 1; j++)
-        {
-          if( bptr[j]==',' )
+      {
+        if( bptr[j]==',' )
         {
           found=1;
           break;
         }
-          cpos++;
-        }
+        cpos++;
+      }
 
       if( !found )
       {
@@ -92,7 +92,7 @@ get_affinity_mask (const int sock, cpu_set_t * cpuset)
       bptr += (cpos+1);
       id++;
     }
-    }
+  }
 
   rc = id;
 
@@ -102,26 +102,20 @@ get_affinity_mask (const int sock, cpu_set_t * cpuset)
   int pos = 0;
 
   for(i = rc - 1; i >= 0; i--)
-    {
-      memcpy (ptr + pos, &m[i], sizeof (unsigned int));
-      pos += sizeof (unsigned int);
-    }
+  {
+    memcpy (ptr + pos, &m[i], sizeof (unsigned int));
+    pos += sizeof (unsigned int);
+  }
 
   fclose (f);
 
-  return id;
+  return CPU_COUNT(cpuset);
 }
 
 int
 set_socket_affinity (const Id sock)
 {
   cpu_set_t sock_mask;
-
-//  if( sock >= GASPI_MAX_NUMAS )
-//  {
-//    gaspi_debug_print_error("GPI-2 only allows up to a maximum of %d NUMA sockets", GASPI_MAX_NUMAS);
-//    return GASPI_ERROR;
-//  }
 
   int active_cores ( get_affinity_mask (sock, &sock_mask) );
 
