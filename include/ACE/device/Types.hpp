@@ -22,6 +22,8 @@
 #ifndef DEVICE_TYPES_HPP_
 #define DEVICE_TYPES_HPP_
 
+#include <ostream>
+
 namespace ace {
 namespace device {
 
@@ -35,6 +37,11 @@ enum Type {
 
 /*device Ids*/
 typedef unsigned char Id;
+
+std::ostream&
+operator<<
+  ( std::ostream &os
+  , const Type &type );
 
 }
 }

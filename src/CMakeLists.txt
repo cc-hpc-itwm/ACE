@@ -6,6 +6,7 @@ project(libACE LANGUAGES CXX)
 add_library ( ACE 
 	      device/Device.cpp
 	      device/MemoryResource.cpp
+	      device/Types.cpp
 	      device/numa/Device.cpp
 	      device/numa/MemoryResource.cpp
 	      device/numa/Scheduler.cpp
