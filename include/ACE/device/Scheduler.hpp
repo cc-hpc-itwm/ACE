@@ -81,6 +81,12 @@ public:
       return _pScheduler->execute(schedule);
     }
 
+    std::size_t
+    numManagedResources() const override
+    {
+      return _pScheduler->numManagedResources();
+    }
+
 private:
 
     template <typename OtherState>

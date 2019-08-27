@@ -102,6 +102,13 @@ public:
         ,*_pThreadPool
         ).execute();
     }
+
+    std::size_t
+    numManagedResources() const override
+    {
+      return _pThreadPool->numThreads();
+    }
+
 };
 
 }

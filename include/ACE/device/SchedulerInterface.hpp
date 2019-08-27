@@ -51,6 +51,10 @@ public:
     execute
       (schedule::Schedule<State> & schedule) = 0;
 
+    virtual std::size_t
+    numManagedResources
+      () const = 0;
+
 };
 
 }
