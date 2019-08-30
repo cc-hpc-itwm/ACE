@@ -22,7 +22,12 @@
 #include <ACE/device/Types.hpp>
 #include <ACE/utility/Macros.hpp>
 
+#include <algorithm>
+#include <cctype>
 #include <exception>
+#include <functional>
+#include <map>
+#include <string>
 
 namespace ace {
 namespace device {
@@ -43,6 +48,45 @@ operator<<
   }
 
   return os;
+}
+
+std::istream&
+operator>>
+  ( std::istream &is
+  , Type &type )
+{
+  std::map<std::string,Type> const map {
+    std::make_pair("CPU" ,CPU ),
+    std::make_pair("NUMA",NUMA),
+    std::make_pair("GPU" ,GPU ),
+    std::make_pair("FPGA",FPGA)
+  };
+
+  std::string typestring; is >> typestring;
+
+  std::for_each
+    ( typestring.begin()
+    , typestring.end()
+    , [](char & c){
+        c = std::toupper(c);
+      }
+    );
+
+  auto iter (map.find(typestring));
+  if(iter == map.end()) {
+    std::stringstream ss;
+
+    ss << "Device type "
+       << typestring
+       << " is not supported";
+
+    throw std::runtime_error
+      (CODE_ORIGIN + ss.str());
+  }
+
+  type = iter->second;
+
+  return is;
 }
 
 }

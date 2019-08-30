@@ -22,6 +22,7 @@
 #ifndef DEVICE_TYPES_HPP_
 #define DEVICE_TYPES_HPP_
 
+#include <istream>
 #include <ostream>
 
 namespace ace {
@@ -42,6 +43,11 @@ std::ostream&
 operator<<
   ( std::ostream &os
   , const Type &type );
+
+std::istream&
+operator>>
+  ( std::istream & is
+  , Type &type );
 
 }
 }
