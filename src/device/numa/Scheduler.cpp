@@ -46,8 +46,15 @@ get_affinity_mask (const int sock, cpu_set_t * cpuset)
   FILE *f = fopen (path, "r");
   if( f == NULL )
   {
+    std::stringstream ss;
+
+    ss << "Could not open cpumap for node "
+       << sock
+       << ": "
+       << path;
+
     throw std::runtime_error
-      (CODE_ORIGIN + "could not open cpumap for node");
+      (CODE_ORIGIN + ss.str());
   }
 
   //read cpumap
