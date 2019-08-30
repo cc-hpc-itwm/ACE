@@ -37,7 +37,7 @@ enum Type {
 };
 
 /*device Ids*/
-typedef unsigned char Id;
+typedef unsigned short Id;
 
 std::ostream&
 operator<<
