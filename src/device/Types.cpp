@@ -38,10 +38,11 @@ operator<<
   , const Type &type )
 {
   switch (type) {
-    case CPU:  os << "CPU";  break;
-    case NUMA: os << "NUMA"; break;
-    case GPU:  os << "GPU";  break;
-    case FPGA: os << "FPGA"; break;
+    case CPU:    os << "CPU"   ;  break;
+    case NUMA:   os << "NUMA"  ; break;
+    case GPU:    os << "GPU"   ;  break;
+    case FPGA:   os << "FPGA"  ; break;
+    case OPENCL: os << "OPENCL"; break;
     default:
       throw std::runtime_error
         (CODE_ORIGIN + "Type not supported yet");
@@ -56,10 +57,11 @@ operator>>
   , Type &type )
 {
   std::map<std::string,Type> const map {
-    std::make_pair("CPU" ,CPU ),
-    std::make_pair("NUMA",NUMA),
-    std::make_pair("GPU" ,GPU ),
-    std::make_pair("FPGA",FPGA)
+    std::make_pair("CPU"   ,CPU ),
+    std::make_pair("NUMA"  ,NUMA),
+    std::make_pair("GPU"   ,GPU ),
+    std::make_pair("FPGA"  ,FPGA),
+    std::make_pair("OPENCL",OPENCL)
   };
 
   std::string typestring; is >> typestring;

@@ -7,6 +7,9 @@ add_library ( ACE
 	      device/Device.cpp
 	      device/MemoryResource.cpp
 	      device/Types.cpp
+	      device/opencl/Device.cpp
+	      device/opencl/MemoryResource.cpp
+	      device/opencl/Scheduler.cpp
 	      device/numa/Device.cpp
 	      device/numa/MemoryResource.cpp
 	      device/numa/Scheduler.cpp

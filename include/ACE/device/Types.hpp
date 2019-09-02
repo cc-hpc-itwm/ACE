@@ -34,6 +34,7 @@ enum Type {
   NUMA,
   GPU,
   FPGA,
+  OPENCL
 };
 
 /*device Ids*/

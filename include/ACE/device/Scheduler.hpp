@@ -34,6 +34,7 @@
 #include <ACE/device/SchedulerInterface.hpp>
 #include <ACE/device/Types.hpp>
 #include <ACE/device/numa/Scheduler.hpp>
+#include <ACE/device/opencl/Scheduler.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/utility/Macros.hpp>
 
@@ -103,6 +104,16 @@ private:
             pSchedulerCopy.reset
               ( new numa::Scheduler<State>
                 ( dynamic_cast<const numa::Scheduler<OtherState>&>
+                 (*pScheduler)
+                )
+              );
+            break;
+          }
+          case Type::OPENCL:
+          {
+            pSchedulerCopy.reset
+              ( new opencl::Scheduler<State>
+                ( dynamic_cast<const opencl::Scheduler<OtherState>&>
                  (*pScheduler)
                 )
               );
