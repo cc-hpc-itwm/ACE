@@ -57,6 +57,16 @@ public:
     , std::size_t bytes
     , std::size_t alignment ) override;
 
+  void
+  do_host_update
+    ( void * const p
+    , std::size_t const & size ) override;
+
+  void
+  do_device_update
+    ( void * const p
+    , std::size_t const & size ) override;
+
   bool
   do_is_equal
   ( const device::MemoryResource& other ) const noexcept override;

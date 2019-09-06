@@ -50,6 +50,22 @@ MemoryResource
   return this->do_is_equal(other);
 }
 
+void
+MemoryResource
+  ::updateHost
+    ( void * const p
+    , std::size_t const & size ) {
+  return this->do_host_update(p,size);
+}
+
+void
+MemoryResource
+  ::updateDevice
+  ( void * const p
+  , std::size_t const & size ) {
+  return this->do_device_update(p,size);
+}
+
 bool
 operator==
     ( const MemoryResource& a

@@ -24,14 +24,45 @@
 
 #include <ACE/device/MemoryResource.hpp>
 #include <ACE/device/Types.hpp>
+#include <ACE/thread/Mutex.hpp>
 
-#include <set>
+#include <map>
 
 namespace ace {
 namespace device {
 namespace opencl  {
 
 class MemoryResource : public device::MemoryResource {
+
+  struct HostMemoryBlock
+  {
+     using Pointer = void *;
+     using Size = std::size_t;
+
+     Pointer     pointer;
+     std::size_t size;
+
+     bool
+     operator<
+       ( HostMemoryBlock const & other) const
+     {
+       std::size_t const  diff( size > 0 ? (size-1) : 0 );
+
+       return ( static_cast<void*>
+                 ( static_cast<uint8_t*>(pointer) + diff )
+                   < other.pointer );
+     }
+  };
+
+  struct DeviceBuffer
+  {
+     using Pointer = void *;
+     using Offset  = std::size_t;
+     using Size    = std::size_t;
+
+     Pointer pointer;
+     Size    size;
+  };
 
 public:
 
@@ -40,7 +71,7 @@ public:
     , Id const & id ) throw();
 
   MemoryResource
-      ( MemoryResource const & other ) throw();
+      ( MemoryResource const & other ) = delete;
 
   ~MemoryResource();
 
@@ -55,6 +86,18 @@ public:
     , std::size_t bytes
     , std::size_t alignment ) override;
 
+  // transfer data from device to host
+  void
+  do_host_update
+    ( void * const p
+    , std::size_t const & size ) override;
+
+   // transfer data from host to device
+  void
+  do_device_update
+    ( void * const p
+    , std::size_t const & size ) override;
+
   bool
   do_is_equal
   ( const device::MemoryResource& other ) const noexcept override;
@@ -63,10 +106,32 @@ public:
   operator==
     (const MemoryResource& other) const noexcept;
 
+  void
+  getOpenCLBufferAndOffset
+    ( void * const  p
+    , DeviceBuffer::Pointer & pDevice
+    , DeviceBuffer::Offset  & pOffset ) const;
+
+  // true if address is contained in current allocations
+  // false otherwise
+  bool
+  hasBeenAllocated
+    ( void * const p ) const;
+
 private:
+
+  friend std::ostream&
+  operator<<
+    ( std::ostream& os
+    , const MemoryResource& man );
 
   MemoryResource();
   MemoryResource & operator=(MemoryResource const &);
+
+  using AllocationMap = std::map<HostMemoryBlock,DeviceBuffer>;
+
+  AllocationMap _blocks;
+  thread::Mutex _mutex;
 
 };
 

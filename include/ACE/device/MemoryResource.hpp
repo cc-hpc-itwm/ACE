@@ -50,6 +50,17 @@ public:
     is_equal
       ( const MemoryResource& other ) const noexcept;
 
+
+    void
+    updateHost
+      ( void * const p
+      , std::size_t const & size );
+
+    void
+    updateDevice
+      ( void * const p
+      , std::size_t const & size );
+
     friend bool
     operator==
       ( const MemoryResource& a
@@ -78,9 +89,20 @@ private:
       , std::size_t alignment
        ) = 0;
 
+    virtual void
+    do_host_update
+      ( void * const p
+      , std::size_t const & size ) = 0;
+
+    virtual void
+    do_device_update
+      ( void * const p
+      , std::size_t const & size ) = 0;
+
     virtual bool
     do_is_equal
       ( const MemoryResource& other ) const noexcept = 0;
+
 };
 
 }

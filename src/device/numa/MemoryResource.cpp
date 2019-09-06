@@ -170,6 +170,24 @@ MemoryResource
    }
 }
 
+void
+MemoryResource
+  ::do_host_update
+  ( void * const p
+  , std::size_t const & size )
+{
+  return;
+}
+
+void
+MemoryResource
+  ::do_device_update
+  ( void * const p
+  , std::size_t const & size )
+{
+  return;
+}
+
 bool
 MemoryResource
   ::do_is_equal( const device::MemoryResource& other ) const noexcept

@@ -41,6 +41,27 @@ public:
       return Allocator<T>(_pMemoryResource.get());
     }
 
+    // transfer data from device to host
+    template <typename T = void>
+    void
+    updateHost
+      ( T * const p
+      , std::size_t const & size ) {
+      return _pMemoryResource->updateHost
+          (static_cast<void *>(p),size*sizeof(T));
+    }
+
+    // transfer data from host to device
+    template <typename T = void>
+    void
+    updateDevice
+      ( T * const p
+      , std::size_t const & size )
+    {
+      return _pMemoryResource->updateDevice
+          (static_cast<void *>(p),size*sizeof(T));
+    }
+
 
     template <typename State=int>
     Scheduler<State>

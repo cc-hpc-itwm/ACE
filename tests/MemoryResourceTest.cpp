@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 
 #include <ACE/device/numa/MemoryResource.hpp>
+#include <ACE/device/opencl/MemoryResource.hpp>
 
 namespace ace {
 namespace device {
@@ -36,9 +37,7 @@ class MemoryResourceTest : public ::testing::Test
 
   MemoryResourceTest()
   : _segmentSize(1024*1024)
-  {
-
-  }
+  { }
 
   ~MemoryResourceTest()
   { }
@@ -64,6 +63,39 @@ TEST_F(MemoryResourceTest, equal)
       (new numa::MemoryResource(0));
 
   EXPECT_EQ(*pResource1, *pResource2);
+}
+
+TEST_F(MemoryResourceTest, openclallocate)
+{
+  std::unique_ptr<opencl::MemoryResource>  pResource
+    (new opencl::MemoryResource(GPU,0));
+
+  std::size_t nByte(10);
+
+  void * palloc1( pResource->allocate(nByte) );
+  void * palloc2( pResource->allocate(nByte) );
+  void * palloc3( pResource->allocate(nByte) );
+
+  std::cout << *pResource << std::endl;
+
+  for(std::size_t iByte(0);iByte<nByte;++iByte) {
+    void * palloc4 (static_cast<uint8_t*>(palloc2) + iByte);
+
+    void * pDevice(nullptr);
+    std::size_t pOffset(0);
+
+    pResource->getOpenCLBufferAndOffset
+        ( palloc4
+        , pDevice
+        , pOffset );
+
+    EXPECT_EQ(pOffset,iByte);
+  }
+
+
+  pResource->deallocate(palloc3,nByte);
+  pResource->deallocate(palloc2,nByte);
+  pResource->deallocate(palloc1,nByte);
 }
 
 }
