@@ -15,6 +15,7 @@ add_library ( ACE
 	      device/numa/Scheduler.cpp
 	      thread/Barrier.cpp
 	      thread/Exception.cpp
+	      thread/LockGuard.cpp
 	      thread/Mutex.cpp
 	      thread/Pool.cpp
 	      thread/Thread.cpp
