@@ -24,6 +24,9 @@
 
 #include <ACE/device/Device.hpp>
 #include <ACE/device/Types.hpp>
+#include <CL/cl.hpp>
+
+#include <tuple>
 
 namespace ace {
 namespace device {
@@ -34,9 +37,17 @@ class Device
 
 public:
 
-    Device
-      ( Type const & type
-      , Id const & id );
+  Device
+    ( Type const & type
+    , Id const & id );
+
+private:
+
+  Device
+    ( std::tuple<cl::Context, cl::CommandQueue> && tuple );
+
+  cl::Context      _context;
+  cl::CommandQueue _queue;
 
 };
 

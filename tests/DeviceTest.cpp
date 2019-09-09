@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 
 #include <ACE/device/numa/Device.hpp>
+#include <ACE/device/opencl/Device.hpp>
 #include <ACE/schedule/Executor.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/task/Task.hpp>
@@ -183,6 +184,8 @@ TEST_F(DeviceTest, run)
       ( _finalState
       , _vars[iVar] );
   }
+
+  opencl::Device gpu_device(GPU,0);
 }
 
 }

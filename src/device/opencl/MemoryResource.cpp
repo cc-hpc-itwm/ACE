@@ -23,6 +23,8 @@
 #include <ACE/thread/LockGuard.hpp>
 #include <ACE/utility/Macros.hpp>
 
+#include <CL/cl.hpp>
+
 #include <stdexcept>
 #include <memory>
 #include <numa.h>
@@ -38,11 +40,99 @@ namespace device {
 namespace opencl {
 
 MemoryResource
+  ::HostMemBlock
+     ::Pointer
+MemoryResource
+  ::HostMemBlock
+   ::allocate
+      ( std::size_t bytes
+      , std::size_t /*alignment*/ )
+{
+  return static_cast<void*>(new uint8_t[bytes]);
+}
+
+void
+MemoryResource
+  ::HostMemBlock
+   ::deallocate
+      ( Pointer const & p
+      , std::size_t /*bytes*/
+      , std::size_t /*alignment*/ )
+{
+  delete[] static_cast<uint8_t*>(p);
+}
+
+bool
+MemoryResource
+  ::HostMemBlock
+   ::operator<
+    ( HostMemBlock const & other) const
+{
+ std::size_t const  diff( size > 0 ? (size-1) : 0 );
+
+ return ( static_cast<void*>
+           ( static_cast<uint8_t*>(pointer) + diff )
+             < other.pointer );
+}
+
+#ifdef EMULATE_DEVICE
+MemoryResource
+  ::DeviceBuffer
+     ::Pointer
+MemoryResource
+  ::DeviceBuffer
+   ::allocate
+      ( std::size_t bytes
+      , std::size_t /*alignment*/
+      , MemoryResource & /*resource*/ )
+{
+  return static_cast<void*>(new uint8_t[bytes]);
+}
+
+void
+MemoryResource
+  ::DeviceBuffer
+   ::deallocate
+      ( Pointer const & p
+      , std::size_t /*bytes*/
+      , std::size_t /*alignment*/ )
+{
+  delete[] static_cast<uint8_t*>(p);
+}
+#else
+MemoryResource
+  ::DeviceBuffer
+     ::Pointer
+MemoryResource
+  ::DeviceBuffer
+   ::allocate
+      ( std::size_t bytes
+      , std::size_t /*alignment*/
+      , MemoryResource & resource )
+{
+  return new cl::Buffer(resource._context, CL_MEM_READ_WRITE, bytes);
+}
+
+void
+MemoryResource
+  ::DeviceBuffer
+   ::deallocate
+      ( Pointer const & p
+      , std::size_t /*bytes*/
+      , std::size_t /*alignment*/ )
+{
+  delete p;
+}
+#endif
+
+MemoryResource
   ::MemoryResource
-    ( Type const & type
-    , Id const & id ) throw()
+    ( cl::Context & context
+    , cl::CommandQueue & queue ) throw()
 : _blocks()
 , _mutex()
+, _context(context)
+, _queue(queue)
 { }
 
 MemoryResource
@@ -62,7 +152,7 @@ void *
 MemoryResource
   ::do_allocate
    ( std::size_t bytes
-   , std::size_t /*alignment*/)
+   , std::size_t alignment)
 {
   if ( bytes == 0 ) {
     return nullptr;
@@ -71,19 +161,21 @@ MemoryResource
   thread::LockGuard lock(_mutex);
 
   // do the device allocation;
-  DeviceBuffer    deviceBuffer    ({new uint8_t[bytes], bytes });
-  HostMemoryBlock hostMemoryBlock ({new uint8_t[bytes], bytes });
+  DeviceBuffer deviceBuffer
+    ({DeviceBuffer::allocate(bytes,alignment, *this), bytes });
+  HostMemBlock hostMemBlock
+    ({HostMemBlock::allocate(bytes,alignment), bytes });
 
   auto ret (_blocks.insert
               (std::make_pair
-                 ( hostMemoryBlock
+                 ( hostMemBlock
                  , deviceBuffer
                  )
                )
            );
 
   if(ret.second) {
-    return hostMemoryBlock.pointer;
+    return hostMemBlock.pointer;
   }
 
   // Not enough free memory!
@@ -95,13 +187,13 @@ MemoryResource
   ::do_deallocate
    ( void* g_ptr
    , std::size_t bytes
-   , std::size_t /*alignment*/ )
+   , std::size_t alignment )
 {
    if(g_ptr == nullptr) {
      return;
    }
 
-   auto const iter (_blocks.find(HostMemoryBlock({g_ptr,bytes})));
+   auto iter (_blocks.find(HostMemBlock({g_ptr,bytes})));
 
    if(iter==_blocks.end())
    {
@@ -109,9 +201,9 @@ MemoryResource
    }
 
    // delete host memory
-   delete[] iter->first.pointer;
+   HostMemBlock::deallocate(iter->first.pointer , bytes, alignment);
    // delete device memory
-   delete[] iter->second.pointer;
+   DeviceBuffer::deallocate(iter->second.pointer, bytes, alignment);
 
    _blocks.erase(iter);
 }
@@ -129,10 +221,14 @@ MemoryResource
   getOpenCLBufferAndOffset
     (hPointer, dPointer, offset);
 
+#ifdef EMULATE_DEVICE
   memcpy
     ( static_cast<void*>(hPointer)
     , static_cast<void*>(static_cast<uint8_t*>(dPointer)+offset)
     , size );
+#else
+  _queue.enqueueWriteBuffer(*dPointer, CL_TRUE, offset, size, hPointer);
+#endif
 
 }
 
@@ -149,10 +245,14 @@ MemoryResource
   getOpenCLBufferAndOffset
     (hPointer, dPointer, offset);
 
+#ifdef EMULATE_DEVICE
   memcpy
     ( static_cast<void*>(static_cast<uint8_t*>(dPointer)+offset)
     , static_cast<void*>(hPointer)
     , size );
+#else
+  _queue.enqueueWriteBuffer(*dPointer, CL_TRUE, offset, size, hPointer);
+#endif
 }
 
 bool
@@ -183,7 +283,7 @@ MemoryResource
    throw std::runtime_error(CODE_ORIGIN);
  }
 
- auto const iter (_blocks.find(HostMemoryBlock({g_ptr,0})));
+ auto const iter (_blocks.find(HostMemBlock({g_ptr,0})));
 
  if(iter==_blocks.end())
  {
@@ -204,7 +304,7 @@ MemoryResource
    throw std::runtime_error(CODE_ORIGIN);
   }
 
-  auto const iter (_blocks.find(HostMemoryBlock({p,0})));
+  auto const iter (_blocks.find(HostMemBlock({p,0})));
 
   return (iter!=_blocks.end());
 }

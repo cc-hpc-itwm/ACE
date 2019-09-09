@@ -29,6 +29,8 @@
 
 #include <memory>
 
+namespace cl { class CommandQueue; }
+
 namespace ace {
 namespace device {
 namespace opencl {
@@ -39,12 +41,12 @@ class SchedulerRuntime
 public:
 
     SchedulerRuntime
-      ( Type const & type
-      , Id const & id );
+      ( cl::CommandQueue & queue );
 
 protected:
 
     std::shared_ptr<thread::Pool> _pThreadPool;
+    cl::CommandQueue &            _queue;
 };
 
 
@@ -77,9 +79,8 @@ class Scheduler
 public:
 
     Scheduler
-      ( Type const & type
-      , Id const & id)
-    : SchedulerRuntime(type,id)
+      ( cl::CommandQueue & queue )
+    : SchedulerRuntime(queue)
     {}
 
     template <typename OtherState>

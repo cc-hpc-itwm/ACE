@@ -173,8 +173,8 @@ MemoryResource
 void
 MemoryResource
   ::do_host_update
-  ( void * const p
-  , std::size_t const & size )
+  ( void * const /*p*/
+  , std::size_t const & /*size*/ )
 {
   return;
 }
@@ -182,8 +182,8 @@ MemoryResource
 void
 MemoryResource
   ::do_device_update
-  ( void * const p
-  , std::size_t const & size )
+  ( void * const /*p*/
+  , std::size_t const & /*size*/ )
 {
   return;
 }

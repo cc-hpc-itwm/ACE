@@ -28,47 +28,69 @@
 
 #include <map>
 
+namespace cl { class Buffer; class Context; class CommandQueue; }
+
 namespace ace {
 namespace device {
 namespace opencl  {
 
 class MemoryResource : public device::MemoryResource {
 
-  struct HostMemoryBlock
+public:
+
+  struct HostMemBlock
   {
      using Pointer = void *;
      using Size = std::size_t;
 
-     Pointer     pointer;
-     std::size_t size;
+     static Pointer
+     allocate
+       ( std::size_t bytes
+       , std::size_t alignment );
+
+     static void
+     deallocate
+       ( Pointer const & p
+       , std::size_t bytes
+       , std::size_t alignment );
 
      bool
      operator<
-       ( HostMemoryBlock const & other) const
-     {
-       std::size_t const  diff( size > 0 ? (size-1) : 0 );
+       ( HostMemBlock const & other ) const;
 
-       return ( static_cast<void*>
-                 ( static_cast<uint8_t*>(pointer) + diff )
-                   < other.pointer );
-     }
+     Pointer     pointer;
+     std::size_t size;
   };
 
   struct DeviceBuffer
   {
+#ifdef EMULATE_DEVICE
      using Pointer = void *;
+#else
+     using Pointer = cl::Buffer *;
+#endif
      using Offset  = std::size_t;
      using Size    = std::size_t;
+
+     static Pointer
+     allocate
+       ( std::size_t bytes
+       , std::size_t alignment
+       , MemoryResource & resource );
+
+     static void
+     deallocate
+       ( Pointer const & p
+       , std::size_t bytes
+       , std::size_t alignment );
 
      Pointer pointer;
      Size    size;
   };
 
-public:
-
   MemoryResource
-    ( Type const & type
-    , Id const & id ) throw();
+    ( cl::Context & context
+    , cl::CommandQueue & queue ) throw();
 
   MemoryResource
       ( MemoryResource const & other ) = delete;
@@ -128,10 +150,13 @@ private:
   MemoryResource();
   MemoryResource & operator=(MemoryResource const &);
 
-  using AllocationMap = std::map<HostMemoryBlock,DeviceBuffer>;
+  using AllocationMap = std::map<HostMemBlock,DeviceBuffer>;
 
   AllocationMap _blocks;
   thread::Mutex _mutex;
+
+  cl::Context &      _context;
+  cl::CommandQueue & _queue;
 
 };
 

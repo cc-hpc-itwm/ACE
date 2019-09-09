@@ -23,6 +23,7 @@
 
 #include <ACE/utility/Macros.hpp>
 
+#include <CL/cl.hpp>
 
 namespace ace {
 namespace device {
@@ -34,10 +35,11 @@ namespace detail {
 
 SchedulerRuntime
   ::SchedulerRuntime
-   ( Type const & type, Id const & id )
+   ( cl::CommandQueue & queue )
 : _pThreadPool
     ( std::make_shared<thread::Pool>
         ( 1, thread::PIN_1TO1_INHERITED) )
+, _queue(queue)
 { }
 
 }
