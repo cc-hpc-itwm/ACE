@@ -45,21 +45,21 @@ public:
     template <typename T = void>
     void
     updateHost
-      ( T * const p
+      ( const T * const p
       , std::size_t const & size ) {
       return _pMemoryResource->updateHost
-          (static_cast<void *>(p),size*sizeof(T));
+          (reinterpret_cast<void *>(const_cast<T*>(p)),size*sizeof(T));
     }
 
     // transfer data from host to device
     template <typename T = void>
     void
     updateDevice
-      ( T * const p
+      ( const T * const p
       , std::size_t const & size )
     {
       return _pMemoryResource->updateDevice
-          (static_cast<void *>(p),size*sizeof(T));
+          (reinterpret_cast<void *>(const_cast<T*>(p)),size*sizeof(T));
     }
 
 
