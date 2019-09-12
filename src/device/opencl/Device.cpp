@@ -108,6 +108,43 @@ Device
 , _queue(std::move(std::get<1>(tuple)))
 { }
 
+
+cl::Kernel
+Device
+  ::buildKernel
+    ( std::string const & kernelCode
+    , std::string const & kernelName )
+{
+
+  std::vector<cl::Device> devices(_context.getInfo<CL_CONTEXT_DEVICES>());
+
+  if(devices.size()!=1) {
+    throw std::runtime_error
+      (CODE_ORIGIN + "More than a single device associated with context");
+  }
+
+  cl::Device & device(devices.front());
+
+  // c.f. https://github.com/Dakkers/OpenCL-examples/blob/master/example01/main.cpp
+
+  cl::Program::Sources sources;
+
+  sources.push_back({kernelCode.c_str(), kernelCode.length()});
+
+  cl::Program program(_context, sources);
+  if (program.build({device}) != CL_SUCCESS) {
+      std::stringstream ss;
+      ss << "Error building: "
+         << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+      throw std::runtime_error(CODE_ORIGIN+ss.str());
+  }
+
+  cl::Kernel kernel(program, kernelName.c_str());
+
+  return kernel;
+}
+
+
 }
 }
 }

@@ -5,6 +5,7 @@ add_executable ( run_tests
       run_tests.cpp
       DeviceTest.cpp
       MemoryResourceTest.cpp
+      OpenClDeviceTest.cpp
       )
 
 target_include_directories (run_tests PRIVATE 

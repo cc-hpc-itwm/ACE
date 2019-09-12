@@ -24,6 +24,7 @@
 
 #include <ACE/device/Device.hpp>
 #include <ACE/device/Types.hpp>
+#include <ACE/device/opencl/MemoryResource.hpp>
 #include <CL/cl.hpp>
 
 #include <tuple>
@@ -41,6 +42,23 @@ public:
     ( Type const & type
     , Id const & id );
 
+  cl::Kernel
+  buildKernel
+    ( std::string const & functionCode
+    , std::string const & functionName );
+
+  template <typename ...Args>
+  cl::Kernel
+  getBoundKernel
+    ( std::string const & functionCode
+    , std::string const & functionName
+    , Args const & ...args);
+
+  cl::CommandQueue &
+  getQueue() {
+    return _queue;
+  }
+
 private:
 
   Device
@@ -50,6 +68,79 @@ private:
   cl::CommandQueue _queue;
 
 };
+
+
+}
+}
+}
+
+
+/// implementation
+
+namespace ace {
+namespace device {
+namespace opencl {
+
+namespace detail {
+
+inline void
+_setKernelParameters
+  ( cl::Kernel &
+  , MemoryResource &
+  , int
+  )
+{}
+
+template<typename T, typename... Args>
+inline void
+_setKernelParameters
+  ( cl::Kernel &kernel
+  , MemoryResource & memResource
+  , int i
+  , const T &firstParameter
+  , const Args& ...restOfParameters)
+{
+  MemoryResource::DeviceBuffer::Pointer dPointer;
+  MemoryResource::DeviceBuffer::Offset  dOffset;
+
+  memResource.getOpenCLBufferAndOffset
+    (firstParameter, dPointer, dOffset);
+
+  kernel.setArg(i, *dPointer);
+  _setKernelParameters(kernel,memResource,i+1,restOfParameters...);
+}
+
+template<typename... Args>
+inline void
+setKernelParameters
+  ( cl::Kernel &kernel
+  , MemoryResource & memResource
+  , const Args& ...args )
+{
+  _setKernelParameters(kernel, memResource, 0, args...);
+}
+
+} // namespace detail
+
+
+template <typename ...Args>
+cl::Kernel
+Device
+  ::getBoundKernel
+    ( std::string const & functionCode
+    , std::string const & functionName
+    , Args const & ...args)
+{
+  cl::Kernel kernel(buildKernel(functionCode,functionName));
+
+  detail::setKernelParameters
+    ( kernel
+    , *reinterpret_cast<MemoryResource*>(allocator().resource())
+    , args...
+    );
+
+  return kernel;
+}
 
 }
 }
