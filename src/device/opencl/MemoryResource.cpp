@@ -227,7 +227,7 @@ MemoryResource
     , static_cast<void*>(static_cast<uint8_t*>(dPointer)+offset)
     , size );
 #else
-  _queue.enqueueWriteBuffer(*dPointer, CL_TRUE, offset, size, hPointer);
+  _queue.enqueueReadBuffer(*dPointer, CL_TRUE, offset, size, hPointer);
 #endif
 
 }
