@@ -76,11 +76,11 @@ class ExecutableList
       () {
     }
 
-    virtual void
+    void
     execute
       ( State const & state
       , State const & first
-      , State const & final ) {
+      , State const & final ) override {
       for ( auto &i: executables_) {
         i->execute(state,first,final);
       }

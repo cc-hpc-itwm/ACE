@@ -83,6 +83,33 @@ namespace opencl {
 
 namespace detail {
 
+
+template<typename T>
+inline typename std::enable_if
+  < !std::is_pointer<T>::value
+  , T const &
+  >::type
+_getKernelParameter(MemoryResource & /*memResource*/, const T & arg) {
+  return arg;
+}
+
+template<typename T>
+inline  typename std::enable_if
+  < std::is_pointer<T>::value
+  , std::remove_pointer<MemoryResource::DeviceBuffer::Pointer>::type const &
+  >::type
+_getKernelParameter
+  ( MemoryResource & memResource
+  , T const & hPointer ) {
+  MemoryResource::DeviceBuffer::Pointer dPointer;
+  MemoryResource::DeviceBuffer::Offset  dOffset;
+
+  memResource.getOpenCLBufferAndOffset
+  (hPointer, dPointer, dOffset);
+
+  return *dPointer;
+}
+
 inline void
 _setKernelParameters
   ( cl::Kernel &
@@ -100,13 +127,11 @@ _setKernelParameters
   , const T &firstParameter
   , const Args& ...restOfParameters)
 {
-  MemoryResource::DeviceBuffer::Pointer dPointer;
-  MemoryResource::DeviceBuffer::Offset  dOffset;
+  kernel.setArg
+    ( i
+    , _getKernelParameter(memResource,firstParameter)
+    );
 
-  memResource.getOpenCLBufferAndOffset
-    (firstParameter, dPointer, dOffset);
-
-  kernel.setArg(i, *dPointer);
   _setKernelParameters(kernel,memResource,i+1,restOfParameters...);
 }
 

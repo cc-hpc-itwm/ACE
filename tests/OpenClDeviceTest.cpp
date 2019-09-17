@@ -29,10 +29,53 @@
 
 #include <vector>
 
-namespace ace {
-namespace device {
 
 namespace detail {
+
+  template <typename GI>
+  GI div_roundup(GI numerator, GI denominator)
+  { return ( numerator + denominator - static_cast<GI>(1) ) / denominator; }
+
+  template <class GI>
+  class UniformPartition
+  {
+
+  public:
+
+    UniformPartition( GI begin, GI end, unsigned short nparts )
+    : _begin(begin)
+    , _nelems(end-begin)
+    , _nparts(nparts)
+    {}
+
+    GI
+    begin( unsigned short ipart) const
+    { return _begin
+          + div_roundup( static_cast<GI>(ipart) * _nelems, _nparts ); }
+
+    GI
+    end( unsigned short ipart ) const
+    { return begin(ipart + 1); }
+
+    GI
+    nparts() const
+    { return _nparts; }
+
+    GI
+    size(unsigned short ipart ) const
+    { return end(ipart) - begin(ipart); }
+
+    GI
+    size() const
+    { return _nelems; }
+
+  private:
+
+    GI _begin;
+    GI _nelems;
+    GI _nparts;
+
+  };
 
 class PreCondition
     : public ace::task::PreCondition<int> {
@@ -98,29 +141,43 @@ class Executable
   public:
 
     Executable
-      ( int & var )
-    : _var (var)
-    {}
+      ( cl::Kernel & kernel_e
+      , cl::Kernel & kernel_o
+      , cl::CommandQueue & queue )
+    : _kernel_e (kernel_e)
+    , _kernel_o (kernel_o)
+    , _queue (queue)
+    { }
 
     virtual
     ~Executable()
     { }
 
-    virtual void
+    void
     execute
-      ( int const & /*state*/
-      , int const & /*first*/
-      , int const & /*final*/ ) {
-      _var+=1;
+      ( int const & state
+      , int const & first
+      , int const & /*final*/ ) override {
+
+      if((state-first)%2 == 0 ) {
+        _queue.enqueueTask(_kernel_e);
+      }
+      else {
+        _queue.enqueueTask(_kernel_o);
+      }
     }
 
   private:
 
-    int &                  _var;
+    cl::Kernel _kernel_e;
+    cl::Kernel _kernel_o;
+    cl::CommandQueue & _queue;
 };
 
 } // namespace detail
 
+namespace ace {
+namespace device {
 
 class OpenClDeviceTest : public ::testing::Test
 {
@@ -130,42 +187,10 @@ class OpenClDeviceTest : public ::testing::Test
     using Task = ace::task::Task<State>;
     using Schedule = ace::schedule::Schedule<State>;
 
-    std::vector<int>   _vars;
-    State              _initialState;
-    State              _finalState;
-    std::vector<Task*> _taskList;
-    Schedule           _schedule;
+
 
   OpenClDeviceTest()
-  : _vars(1000,0)
-  , _initialState(0)
-  , _finalState(10000)
-  , _taskList(1000)
-  {
-
-
-    std::size_t nTask(_taskList.size());
-    for( std::size_t iTask(0)
-       ;             iTask < nTask
-       ;           ++iTask ) {
-      _taskList[iTask] = new Task(_initialState, _finalState);
-      _schedule.insert(_taskList[iTask]);
-    }
-
-    for( std::size_t iTask(0)
-       ;             iTask < nTask
-       ;           ++iTask ) {
-      int const iLeftTask ( (iTask + nTask - 1) % nTask );
-      int const iRightTask( (iTask + nTask + 1) % nTask );
-
-      _taskList[iTask]->insert( std::move( std::unique_ptr<ace::task::PreCondition<int>>(new detail::PreCondition
-                                ( _taskList[iLeftTask]->state()
-                                , _taskList[iRightTask]->state() ) ) ) );
-      _taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new detail::Executable(_vars[iTask]) ) ) );
-      _taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new detail::PostCondition
-                                ( _taskList[iTask]->state() ) ) ) );
-    }
-  }
+  { }
 
   ~OpenClDeviceTest()
   { }
@@ -184,6 +209,7 @@ TEST_F(OpenClDeviceTest, run)
   for(int i(0);i<n;++i) {
     a[i] = i;
     b[i] = n -i - 1;
+    c[i] = n;
   }
 
   gpu_device.updateDevice<int>(a.data(),a.size());
@@ -230,6 +256,239 @@ TEST_F(OpenClDeviceTest, run)
   }
 
   gpu_device.allocator<int>().deallocate(&n,1);
+
+}
+
+TEST_F(OpenClDeviceTest, Iterative)
+{
+
+  opencl::Device gpu_device(GPU,0);
+
+  int const n(101);
+  std::vector<int,Allocator<int>> a(n,gpu_device.allocator<int>());
+  std::vector<int,Allocator<int>> b(n,gpu_device.allocator<int>());
+
+  for(int i(0);i<n;++i) {
+    a[i] = 0;
+    b[i] = 1;
+  }
+
+  gpu_device.updateDevice<int>(b.data(),b.size());
+
+  // calculates for each element; next = ( curr(left) + curr(right) ) / 2 +1
+  std::string kernel_code =
+    "   void kernel simple_stencil_e(global int* A, global const int* B,"
+    "                                const int N) {"
+    "       int ID, Nthreads, n, ratio, start, stop, il, ir;"
+    ""
+    "       ID = get_global_id(0);"
+    "       Nthreads = get_global_size(0);"
+    "       n = N;"
+    ""
+    "       ratio = (n / Nthreads);"  // number of elements for each thread
+    "       start = ratio * ID;"
+    "       stop  = ratio * (ID + 1);"
+    ""
+    "       for (int i=start; i<stop; i++) {"
+    "         il = ( i + n - 1 ) % n;"
+    "         ir = ( i + n + 1 ) % n;"
+    "         A[i] = (B[il] + B[ir]) / 2 + 1;"
+    "       }"
+    "   }"
+    ""
+    "   void kernel simple_stencil_o(global const int* A, global int* B,"
+    "                                const int N) {"
+    "       int ID, Nthreads, n, ratio, start, stop, il, ir;"
+    ""
+    "       ID = get_global_id(0);"
+    "       Nthreads = get_global_size(0);"
+    "       n = N;"
+    ""
+    "       ratio = (n / Nthreads);"  // number of elements for each thread
+    "       start = ratio * ID;"
+    "       stop  = ratio * (ID + 1);"
+    ""
+    "       for (int i=start; i<stop; i++) {"
+    "         il = ( i + n - 1 ) % n;"
+    "         ir = ( i + n + 1 ) % n;"
+    "         B[i] = (A[il] + A[ir]) / 2 + 1;"
+    "       }"
+    "   }";
+
+  cl::Kernel kernel_e
+    (gpu_device.getBoundKernel
+       ( kernel_code
+       ,"simple_stencil_e"
+       , a.data()
+       , b.data()
+       , n
+       )
+    );
+
+  cl::Kernel kernel_o
+    (gpu_device.getBoundKernel
+       ( kernel_code
+       ,"simple_stencil_o"
+       , a.data()
+       , b.data()
+       , n
+       )
+    );
+
+  for(int it(0);it<50;++it) {
+    // execute the kernel on GPU
+    gpu_device.getQueue().enqueueTask(kernel_e);
+    gpu_device.getQueue().enqueueTask(kernel_o);
+  }
+
+  // read result from GPU to here
+  gpu_device.updateHost<int>(a.data(),a.size());
+
+
+  for (int i=0; i<n; i++) {
+    EXPECT_EQ( a[i], 100 );
+  }
+}
+
+TEST_F(OpenClDeviceTest, Task)
+{
+
+  opencl::Device gpu_device(GPU,0);
+
+  int const n(11);
+  std::vector<int,Allocator<int>> a(n,gpu_device.allocator<int>());
+  std::vector<int,Allocator<int>> b(n,gpu_device.allocator<int>());
+
+  for(int i(0);i<n;++i) {
+    a[i] = 0;
+    b[i] = 1;
+  }
+
+  gpu_device.updateDevice<int>(b.data(),b.size());
+
+  // calculates for each element; next = ( curr(left) + curr(right) ) / 2 +1
+  std::string kernel_code =
+    "   void kernel simple_stencil_e"
+    "           ( global int* A, global int const* B,"
+    "             const int N, const int iBeg, const int iEnd) {"
+    "       int ID, Nthreads, n, ratio, start, stop, il, ir;"
+    ""
+    "       ID = get_global_id(0);"
+    "       Nthreads = get_global_size(0);"
+    "       n = N;"
+    ""
+    "       ratio = ( (iEnd-iBeg) / Nthreads);"  // number of elements for each thread
+    "       start = iBeg + ratio * (ID + 0);"
+    "       stop  = iBeg + ratio * (ID + 1);"
+    ""
+    "       for (int i=start; i<stop; i++) {"
+    "         il = ( i + n - 1 ) % n;"
+    "         ir = ( i + n + 1 ) % n;"
+    "         A[i] = (B[il] + B[ir]) / 2 + 1;"
+    "       }"
+    "   }"
+    ""
+    "   void kernel simple_stencil_o"
+    "           ( global int const * A, global int * B,"
+    "             const int N, const int iBeg, const int iEnd) {"
+    "       int ID, Nthreads, n, ratio, start, stop, il, ir;"
+    ""
+    "       ID = get_global_id(0);"
+    "       Nthreads = get_global_size(0);"
+    "       n = N;"
+    ""
+    "       ratio = ( (iEnd-iBeg) / Nthreads);"  // number of elements for each thread
+    "       start = iBeg + ratio * (ID + 0);"
+    "       stop  = iBeg + ratio * (ID + 1);"
+    ""
+    "       for (int i=start; i<stop; i++) {"
+    "         il = ( i + n - 1 ) % n;"
+    "         ir = ( i + n + 1 ) % n;"
+    "         B[i] = (A[il] + A[ir]) / 2 + 1;"
+    "       }"
+    "   }";
+
+  {
+    int const nPart(11);
+
+    detail::UniformPartition<int> part(0,n,nPart);
+
+    State              initialState(0);
+    State              finalState  (100);
+    std::vector<Task*> taskList    (nPart);
+    Schedule           schedule;
+
+    std::size_t nTask(taskList.size());
+    for( std::size_t iTask(0)
+       ;             iTask < nTask
+       ;           ++iTask ) {
+      taskList[iTask] = new Task(initialState, finalState);
+      schedule.insert(taskList[iTask]);
+    }
+
+    for( std::size_t iTask(0)
+       ;             iTask < nTask
+       ;           ++iTask ) {
+
+      int const iLeftTask ( (iTask + nTask - 1) % nTask );
+      int const iRightTask( (iTask + nTask + 1) % nTask );
+
+      taskList[iTask]->insert
+        ( std::move
+          ( std::unique_ptr<ace::task::PreCondition<int>>
+            ( new detail::PreCondition
+                ( taskList[iLeftTask]->state()
+                , taskList[iRightTask]->state() ) ) ) );
+
+      cl::Kernel kernel_e
+          (gpu_device.getBoundKernel
+             ( kernel_code
+             ,"simple_stencil_e"
+             , a.data()
+             , b.data()
+             , part.size()
+             , part.begin(iTask)
+             , part.end(iTask)
+             )
+          );
+
+      cl::Kernel kernel_o
+        (gpu_device.getBoundKernel
+           ( kernel_code
+           ,"simple_stencil_o"
+           , a.data()
+           , b.data()
+           , part.size()
+           , part.begin(iTask)
+           , part.end(iTask)
+           )
+        );
+
+      taskList[iTask]->insert
+        ( std::move
+          ( std::unique_ptr<ace::task::Executable<int>>
+            ( new detail::Executable
+                ( kernel_e
+                , kernel_o
+                , gpu_device.getQueue() ) ) ) );
+
+      taskList[iTask]->insert
+        (std::move
+         ( std::unique_ptr<ace::task::PostCondition<int>>
+           ( new detail::PostCondition
+                ( taskList[iTask]->state() ) ) ) );
+    }
+
+    gpu_device.scheduler<State>().execute(schedule);
+
+  }
+
+  // read result from GPU to here
+  gpu_device.updateHost<int>(a.data(),a.size());
+
+  for (int i=0; i<n; i++) {
+    EXPECT_EQ( a[i], 100 );
+  }
 
 }
 
