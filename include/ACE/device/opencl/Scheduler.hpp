@@ -22,9 +22,9 @@
 #ifndef DEVICE_OPENCL_SCHEDULER_HPP_
 #define DEVICE_OPENCL_SCHEDULER_HPP_
 
+#include <ACE/device/opencl/Executor.hpp>
 #include <ACE/device/SchedulerInterface.hpp>
 #include <ACE/device/Types.hpp>
-#include <ACE/schedule/Executor.hpp>
 #include <ACE/schedule/Schedule.hpp>
 
 #include <memory>
@@ -42,6 +42,12 @@ public:
 
     SchedulerRuntime
       ( cl::CommandQueue & queue );
+
+    ~SchedulerRuntime
+      ()
+    {
+      _queue.finish();
+    }
 
 protected:
 
@@ -99,10 +105,11 @@ public:
     execute
       (schedule::Schedule<State> & schedule) override
     {
-      schedule::ScheduleExecuter<State>
+      ScheduleExecuter<State>
         ( const_cast<schedule::Schedule<State> &>
            (schedule)
         ,*_pThreadPool
+        , _queue
         ).execute();
     }
 

@@ -23,6 +23,8 @@
 
 #include <ACE/device/numa/Device.hpp>
 #include <ACE/device/opencl/Device.hpp>
+#include <ACE/device/opencl/Kernel.hpp>
+#include <ACE/device/Types.hpp>
 #include <ACE/schedule/Executor.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/task/Task.hpp>
@@ -30,7 +32,7 @@
 #include <vector>
 
 
-namespace detail {
+namespace {
 
   template <typename GI>
   GI div_roundup(GI numerator, GI denominator)
@@ -167,14 +169,27 @@ class Executable
       }
     }
 
+    ace::device::Kernel &
+    getKernel
+      ( int const & state
+      , int const & first
+      , int const & /*final*/ ) override {
+      if((state-first)%2 == 0 ) {
+        return _kernel_e;
+      }
+      else {
+        return _kernel_o;
+      }
+    }
+
   private:
 
-    cl::Kernel _kernel_e;
-    cl::Kernel _kernel_o;
+    ace::device::opencl::Kernel _kernel_e;
+    ace::device::opencl::Kernel _kernel_o;
     cl::CommandQueue & _queue;
 };
 
-} // namespace detail
+} // anonymous namespace
 
 namespace ace {
 namespace device {
@@ -355,7 +370,7 @@ TEST_F(OpenClDeviceTest, Task)
 
   opencl::Device gpu_device(GPU,0);
 
-  int const n(11);
+  int const n(101);
   std::vector<int,Allocator<int>> a(n,gpu_device.allocator<int>());
   std::vector<int,Allocator<int>> b(n,gpu_device.allocator<int>());
 
@@ -411,7 +426,7 @@ TEST_F(OpenClDeviceTest, Task)
   {
     int const nPart(11);
 
-    detail::UniformPartition<int> part(0,n,nPart);
+    ::UniformPartition<int> part(0,n,nPart);
 
     State              initialState(0);
     State              finalState  (100);
@@ -436,7 +451,7 @@ TEST_F(OpenClDeviceTest, Task)
       taskList[iTask]->insert
         ( std::move
           ( std::unique_ptr<ace::task::PreCondition<int>>
-            ( new detail::PreCondition
+            ( new ::PreCondition
                 ( taskList[iLeftTask]->state()
                 , taskList[iRightTask]->state() ) ) ) );
 
@@ -467,7 +482,7 @@ TEST_F(OpenClDeviceTest, Task)
       taskList[iTask]->insert
         ( std::move
           ( std::unique_ptr<ace::task::Executable<int>>
-            ( new detail::Executable
+            ( new ::Executable
                 ( kernel_e
                 , kernel_o
                 , gpu_device.getQueue() ) ) ) );
@@ -475,7 +490,7 @@ TEST_F(OpenClDeviceTest, Task)
       taskList[iTask]->insert
         (std::move
          ( std::unique_ptr<ace::task::PostCondition<int>>
-           ( new detail::PostCondition
+           ( new ::PostCondition
                 ( taskList[iTask]->state() ) ) ) );
     }
 

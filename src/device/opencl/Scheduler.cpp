@@ -38,7 +38,7 @@ SchedulerRuntime
    ( cl::CommandQueue & queue )
 : _pThreadPool
     ( std::make_shared<thread::Pool>
-        ( 4, thread::PIN_1TO1_INHERITED) )
+        ( 1, thread::PIN_1TO1_INHERITED) )
 , _queue(queue)
 { }
 

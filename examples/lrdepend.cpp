@@ -1,7 +1,10 @@
+#include <ACE/device/Types.hpp>
 #include <ACE/schedule/Executor.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/task/Task.hpp>
+
 #include <iostream>
+#include <functional>
 #include <sstream>
 #include <unistd.h>
 #include <time.h>
@@ -138,6 +141,15 @@ class Executable
     , _pVar( new int [16] )
     , _var (_pVar[0])
     , _time()
+    , _kernel
+      ( [&]()
+        {
+          _time.start();
+          _var+=1;
+          sleepCycles(_waittime);
+          _time.stop();
+        }
+      )
     {}
 
     virtual
@@ -169,6 +181,20 @@ class Executable
       _time.stop();
     }
 
+    virtual ace::device::Kernel &
+    getKernel
+      ( int const & /*state*/
+      , int const & /*first*/
+      , int const & /*final*/ ) {
+//      std::cout << "execute of "
+//                << _name
+//                << ": "
+//                << state
+//                << std::endl;
+
+      return _kernel;
+    }
+
   private:
 
     std::string const _name;
@@ -177,6 +203,8 @@ class Executable
     std::unique_ptr<int[]> _pVar;
     int &                  _var;
     ace::Timer             _time;
+
+    ace::device::numa::Kernel _kernel;
 
 };
 

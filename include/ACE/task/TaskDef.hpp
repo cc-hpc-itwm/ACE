@@ -85,10 +85,13 @@ public:
       if(static_cast<bool>(executable)) {
 
         if( !static_cast<bool>(executables_) ) {
-            executables_.reset(new ExecutableList<State>);
+//            executables_.reset(new ExecutableList<State>);
+          executables_ = std::move(executable);
         }
-
-        executables_->insert( std::move(executable) );
+        else {
+          throw std::runtime_error("Accept a single executable only");
+        }
+//        executables_->insert( std::move(executable) );
       }
     }
 
@@ -154,7 +157,8 @@ public:
 public:
 
     std::unique_ptr<PreConditionList<State>>  pre_conditions_;
-    std::unique_ptr<ExecutableList<State>>    executables_;
+//    std::unique_ptr<ExecutableList<State>>    executables_;
+    std::unique_ptr<Executable<State>>        executables_;
     std::unique_ptr<PostConditionList<State>> post_conditions_;
 
 };

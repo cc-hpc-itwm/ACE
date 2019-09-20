@@ -22,11 +22,14 @@
 #ifndef SCHEDULER_TASK_H
 #define SCHEDULER_TASK_H 1
 
+#include <iostream>
 #include <memory>
+#include <ACE/device/Kernel.hpp>
 #include <ACE/task/Executable.hpp>
 #include <ACE/task/PostCondition.hpp>
 #include <ACE/task/PreCondition.hpp>
 #include <ACE/task/TaskDef.hpp>
+#include <ACE/utility/Macros.hpp>
 
 #define CACHELINESIZE 64
 
@@ -59,8 +62,19 @@ public:
   execute
     () {
     if(TaskDef<State>::hasExecutable()) {
-       TaskDef<State>::getExecutable().execute(state_,first_,final_);
+      TaskDef<State>::getExecutable().execute(state_,first_,final_);
     }
+  }
+
+  inline device::Kernel &
+  getKernel
+    () {
+    if(!TaskDef<State>::hasExecutable()) {
+      throw std::runtime_error
+        (CODE_ORIGIN+"No kernel available");
+    }
+
+    return TaskDef<State>::getExecutable().getKernel(state_,first_,final_);
   }
 
   inline void
@@ -69,10 +83,20 @@ public:
         TaskDef<State>::getPostCondition().set(state_,first_,final_);
     }
 
-    status_ = ( finished()
-              ? Status::FINISHED
-              : Status::FREE );
+    if( !tryAtomicStatusChange
+          ( Status::IN_USE
+          , finished()
+          ? Status::FINISHED
+          : Status::FREE) ) {
+      std::cout << "setPostCondition: Mismatch" << std::endl;
+    }
+
+//    status_ = ( finished()
+//              ? Status::FINISHED
+//              : Status::FREE );
   }
+
+
 
   inline bool
   ready_to_execute
@@ -112,6 +136,17 @@ public:
   status
     () {
     return status_;
+  }
+
+  bool tryAtomicStatusChange
+    ( Status const expected
+    , Status const desired)
+  {
+     int const * const pExpectedL(reinterpret_cast<int const*>(&expected));
+     int const * const pDesiredL (reinterpret_cast<int const*>(&desired));
+     int * const pValueL   (reinterpret_cast<int*>(&status_));
+
+     return (__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL));
   }
 
 private:

@@ -20,6 +20,7 @@
  */
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/utility/LockGuard.h>
+#include <unistd.h>
 
 namespace ace {
 namespace schedule {
@@ -90,14 +91,15 @@ Schedule<State>
 
       if((*spin_)->status() == Status::FREE) {
 
-        Status expected(Status::FREE);
-        Status desired (Status::IN_USE);
-
-        int * const pExpectedL(reinterpret_cast<int*>(&expected));
-        int * const pDesiredL (reinterpret_cast<int*>(&desired));
-        int * const pValueL   (reinterpret_cast<int*>(&(*spin_)->status()));
-
-        if(__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL)) {
+//        Status expected(Status::FREE);
+//        Status desired (Status::IN_USE);
+//
+//        int * const pExpectedL(reinterpret_cast<int*>(&expected));
+//        int * const pDesiredL (reinterpret_cast<int*>(&desired));
+//        int * const pValueL   (reinterpret_cast<int*>(&(*spin_)->status()));
+//
+//        if(__sync_bool_compare_and_swap(pValueL, *pExpectedL, *pDesiredL)) {
+        if((*spin_)->tryAtomicStatusChange(Status::FREE,Status::IN_USE)) {
           task_in_use = *spin_;
           break;
         }
@@ -154,13 +156,14 @@ Schedule<State>
     {
       using Status = typename task::Task<State>::Status;
 
-      task_in_use->status() = ( task_in_use->finished()
-                              ? Status::FINISHED
-                              : Status::FREE );
+      if( !task_in_use->tryAtomicStatusChange(Status::IN_USE, Status::FREE) ) {
+        std::cout << "Ooops. This should not have happened" << std::endl;
+//        task_in_use->status() = ( task_in_use->finished()
+//                                ? Status::FINISHED
+//                                : Status::FREE );
+      }
       // loop on, try again in the next loop
     }
-
-    // usleep(1000);
     /// \todo something like usleep() could be inserted somewhere if the
     ///       scheduler goes into a temporary spin lock
   }

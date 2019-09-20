@@ -22,15 +22,15 @@
 #include <gtest/gtest.h>
 
 #include <ACE/device/numa/Device.hpp>
+#include <ACE/device/numa/Kernel.hpp>
 #include <ACE/device/opencl/Device.hpp>
 #include <ACE/schedule/Executor.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/task/Task.hpp>
 
-namespace ace {
-namespace device {
+#include <functional>
 
-namespace detail {
+namespace {
 
 class PreCondition
     : public ace::task::PreCondition<int> {
@@ -98,6 +98,12 @@ class Executable
     Executable
       ( int & var )
     : _var (var)
+    , _kernel
+      ( [this]()->void
+         {
+           this->_var+=1;
+         }
+      )
     {}
 
     virtual
@@ -112,13 +118,24 @@ class Executable
       _var+=1;
     }
 
+    virtual ace::device::Kernel &
+    getKernel
+      ( int const & /*state*/
+      , int const & /*first*/
+      , int const & /*final*/ ) {
+      return _kernel;
+    }
+
   private:
 
-    int &                  _var;
+    int &    _var;
+    ace::device::numa::Kernel _kernel;
 };
 
-} // namespace detail
+} // anonymous namespace
 
+namespace ace {
+namespace device {
 
 class DeviceTest : public ::testing::Test
 {
@@ -156,11 +173,11 @@ class DeviceTest : public ::testing::Test
       int const iLeftTask ( (iTask + nTask - 1) % nTask );
       int const iRightTask( (iTask + nTask + 1) % nTask );
 
-      _taskList[iTask]->insert( std::move( std::unique_ptr<ace::task::PreCondition<int>>(new detail::PreCondition
+      _taskList[iTask]->insert( std::move( std::unique_ptr<ace::task::PreCondition<int>>(new ::PreCondition
                                 ( _taskList[iLeftTask]->state()
                                 , _taskList[iRightTask]->state() ) ) ) );
-      _taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new detail::Executable(_vars[iTask]) ) ) );
-      _taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new detail::PostCondition
+      _taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::Executable<int>>(new ::Executable(_vars[iTask]) ) ) );
+      _taskList[iTask]->insert(std::move ( std::unique_ptr<ace::task::PostCondition<int>>(new ::PostCondition
                                 ( _taskList[iTask]->state() ) ) ) );
     }
   }

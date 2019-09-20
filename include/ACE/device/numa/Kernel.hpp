@@ -15,49 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * Types.hpp
+ * Kernel.hpp
  *
  */
 
-#ifndef DEVICE_TYPES_HPP_
-#define DEVICE_TYPES_HPP_
+#ifndef DEVICE_NUMA_KERNEL_HPP_
+#define DEVICE_NUMA_KERNEL_HPP_
 
-#include <istream>
-#include <ostream>
 #include <functional>
-#include <CL/cl.hpp>
-
-namespace ace { namespace device { namespace opencl { class Kernel; } } }
 
 namespace ace {
 namespace device {
+namespace numa {
 
-/*supported device types*/
-enum Type {
-  CPU,
-  NUMA,
-  GPU,
-  FPGA,
-  OPENCL
+class Kernel : public ace::device::Kernel
+             , public std::function<void()>
+{
+
+public:
+
+    Kernel
+      ( std::function<void()> const & kernel)
+    : std::function<void()>(kernel)
+    {}
+
 };
 
-/*device Ids*/
-typedef unsigned short Id;
+} // opencl
+} // device
+} // opencl
 
-std::ostream&
-operator<<
-  ( std::ostream &os
-  , const Type &type );
-
-std::istream&
-operator>>
-  ( std::istream & is
-  , Type &type );
-
-using X86Kernel = std::function<void()>;
-using OpenCLKernel  = opencl::Kernel;
-
-}
-}
-
-#endif /* DEVICE_TYPES_HPP_ */
+#endif /* DEVICE_OPENCL_KERNEL_HPP_ */

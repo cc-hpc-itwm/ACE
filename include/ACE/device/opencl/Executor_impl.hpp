@@ -19,20 +19,26 @@
  *
  */
 
+#include <iostream>
 #include <limits>
-#include <ACE/device/numa/Kernel.hpp>
-#include <ACE/schedule/Executor.hpp>
+#include <ACE/device/opencl/Executor.hpp>
+#include <ACE/device/opencl/Kernel.hpp>
+#include <ACE/device/Types.hpp>
+#include <CL/cl.hpp>
 
 namespace ace {
-namespace schedule {
+namespace device {
+namespace opencl {
 
 template <typename State>
 ScheduleExecuter<State>
   ::ScheduleExecuter
-   ( Schedule<State> & schedule
-   , thread::Pool & pool)
+   ( schedule::Schedule<State> & schedule
+   , thread::Pool & pool
+   , cl::CommandQueue & queue)
 : _schedule(schedule)
 , _pool(pool)
+, _queue(queue)
 , _totalRunTimer(_pool.numThreads())
 , _spinLockTimer(_pool.numThreads())
 , _executerTimer(_pool.numThreads())
@@ -188,8 +194,11 @@ ScheduleExecuter<State>
    ( int tid
    , void * arg ) {
 
-  Schedule<State> & schedule
+  schedule::Schedule<State> & schedule
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_schedule );
+
+  cl::CommandQueue & queue
+    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_queue );
 
   Timer & totalRunTimer
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_totalRunTimer[tid] );
@@ -197,8 +206,8 @@ ScheduleExecuter<State>
   Timer & executerTimer
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_executerTimer[tid] );
 
-  Timer & postCondTimer
-    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_postCondTimer[tid] );
+//  Timer & postCondTimer
+//    ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_postCondTimer[tid] );
 
   Timer & spinLockTimer
     ( reinterpret_cast<ScheduleExecuter<State> *>(arg)->_spinLockTimer[tid] );
@@ -212,7 +221,7 @@ ScheduleExecuter<State>
 
   spinLockTimer.start();
 
-  typename Schedule<State>::iterator spin( schedule.begin() );
+  typename schedule::Schedule<State>::iterator spin( schedule.begin() );
 
   while (!finished)
   {
@@ -223,16 +232,32 @@ ScheduleExecuter<State>
       spinLockTimer.stop();
 
       executerTimer.start();
-//      task->execute();
-      device::numa::Kernel & kernel
-        (dynamic_cast<device::numa::Kernel&>(task->getKernel()));
-      kernel();
+
+      Kernel & kernel
+        (dynamic_cast<Kernel&>(task->getKernel()));
+
+      queue.enqueueTask
+        ( static_cast<cl::Kernel&>(kernel)
+        , NULL
+        , &kernel.event()
+        );
+
+      kernel.event().setCallback
+        ( CL_COMPLETE
+        , &setTaskPostCondition
+        , reinterpret_cast<void*>(task)
+        );
+
+      queue.flush();
+
+      // This should not be here: However, using
+      // beignet implementation of opencl the
+      // wait is required, otherwise the very
+      // last task is not executed
+      kernel.event().wait();
+
       ++taskExecCounter;
       executerTimer.stop();
-
-      postCondTimer.start();
-      task->setPostCondition();
-      postCondTimer.stop();
 
       spinLockTimer.start();
     }
@@ -247,5 +272,19 @@ ScheduleExecuter<State>
   totalRunTimer.stop();
 }
 
-} // namespace schedule
+
+template <typename State>
+void CL_CALLBACK
+ScheduleExecuter<State>
+  ::setTaskPostCondition
+  ( cl_event /*event*/, cl_int /*status*/, void * voidTask)
+{
+  task::Task<State>* const task
+    ( reinterpret_cast<task::Task<State>* >(voidTask) );
+
+  task->setPostCondition();
+}
+
+} // namespace opencl
+} // namespace device
 } // namespace ace
