@@ -35,9 +35,21 @@ class Kernel : public ace::device::Kernel
 public:
 
     Kernel
+      ()
+    {}
+
+    Kernel
       ( std::function<void()> const & kernel)
     : std::function<void()>(kernel)
     {}
+
+    Kernel &
+    operator=
+      (std::function<void()> const & kernel)
+    {
+      ::std::function<void()>::operator=(kernel);
+      return *this;
+    }
 
 };
 
