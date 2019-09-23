@@ -233,28 +233,34 @@ ScheduleExecuter<State>
 
       executerTimer.start();
 
-      Kernel & kernel
-        (dynamic_cast<Kernel&>(task->getKernel()));
+      if(task->hasExecutable()) {
+        Kernel & kernel
+          (dynamic_cast<Kernel&>(task->getKernel()));
 
-      queue.enqueueTask
-        ( static_cast<cl::Kernel&>(kernel)
-        , NULL
-        , &kernel.event()
-        );
+        queue.enqueueTask
+          ( static_cast<cl::Kernel&>(kernel)
+          , NULL
+          , &kernel.event()
+          );
 
-      kernel.event().setCallback
-        ( CL_COMPLETE
-        , &setTaskPostCondition
-        , reinterpret_cast<void*>(task)
-        );
+        kernel.event().setCallback
+          ( CL_COMPLETE
+          , &setTaskPostCondition
+          , reinterpret_cast<void*>(task)
+          );
 
-      queue.flush();
+        queue.flush();
 
-      // This should not be here: However, using
-      // beignet implementation of opencl the
-      // wait is required, otherwise the very
-      // last task is not executed
-      kernel.event().wait();
+        // This should not be here: However, using
+        // beignet implementation of opencl the
+        // wait is required, otherwise the very
+        // last task is not executed
+        kernel.event().wait();
+      }
+      else
+      {
+        task->setPostCondition();
+      }
 
       ++taskExecCounter;
       executerTimer.stop();

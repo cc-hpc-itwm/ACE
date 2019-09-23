@@ -224,9 +224,11 @@ ScheduleExecuter<State>
 
       executerTimer.start();
 //      task->execute();
-      device::numa::Kernel & kernel
-        (dynamic_cast<device::numa::Kernel&>(task->getKernel()));
-      kernel();
+      if(task->hasExecutable()) {
+        device::numa::Kernel & kernel
+          (dynamic_cast<device::numa::Kernel&>(task->getKernel()));
+        kernel();
+      }
       ++taskExecCounter;
       executerTimer.stop();
 
