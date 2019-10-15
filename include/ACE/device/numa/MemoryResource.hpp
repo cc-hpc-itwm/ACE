@@ -36,7 +36,7 @@ class MemoryResource : public device::MemoryResource {
 public:
 
   MemoryResource
-    ( std::size_t  node ) throw();
+    ( std::size_t  node );
 
   MemoryResource
     ( std::set<int> const & coreset ) throw();

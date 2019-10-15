@@ -38,7 +38,7 @@ namespace numa {
 
 MemoryResource
   ::MemoryResource
-    ( std::size_t node ) throw()
+    ( std::size_t node )
 : _pnodemask(NULL)
 , _numa_available(true)
 {
