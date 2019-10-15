@@ -267,7 +267,7 @@ MemoryResource
 
 bool
 MemoryResource
-  ::operator==( const MemoryResource& other ) const noexcept
+  ::operator==( const MemoryResource& /*other*/ ) const noexcept
 {
   return true;
 }
