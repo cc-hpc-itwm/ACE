@@ -34,48 +34,27 @@ namespace ace {
 
     Timer()
     : _tag()
-    , _is_running(false)
     , _elapsed_cycles(0.)
     {}
 
     Timer(std::string const & tag)
     : _tag(tag)
-    , _is_running(false)
     , _elapsed_cycles(0.)
     {}
 
     inline void
     start() {
-
-//      if(_is_running)
-//        throw std::logic_error("Timer is already running. Cannot start timer.");
-//
-//      _is_running = true;
-//      clock_gettime(CLOCK_MONOTONIC, &_start);
-//      _elapsed_cycles -= static_cast<double>(__rdtsc());
       _elapsed_cycles -= __rdtsc();
     }
 
     inline void
     stop() {
-//      if(!_is_running)
-//        throw std::logic_error("Timer is not running. Cannot stop timer.");
-//
-//      _is_running = false;
-//      clock_gettime(CLOCK_MONOTONIC, &_end);
-//
-//      _elapsed_sec += timeDiff(_end,_start);
-//      _elapsed_cycles += static_cast<double>(__rdtsc());
       _elapsed_cycles += __rdtsc();
     }
 
     double elapsedCycles () {
       return _elapsed_cycles;
     }
-
-//    double elapsedTime () {
-//      return _elapsed
-//    }
 
     void print() {
 
@@ -89,12 +68,7 @@ namespace ace {
   private:
 
     std::string const _tag;
-    bool _is_running;
-//    double _elapsed_sec;
     long _elapsed_cycles;
-
-    struct timespec _start;
-    struct timespec _end;
 
     static double
     timeDiff(struct timespec &end, struct timespec &start) {
