@@ -22,8 +22,7 @@
 #include <gtest/gtest.h>
 
 #include <ACE/device/numa/MemoryResource.hpp>
-#include <ACE/device/opencl/MemoryResource.hpp>
-#include <CL/cl.hpp>
+
 
 namespace ace {
 namespace device {
@@ -64,61 +63,6 @@ TEST_F(MemoryResourceTest, equal)
       (new numa::MemoryResource(0));
 
   EXPECT_EQ(*pResource1, *pResource2);
-}
-
-TEST_F(MemoryResourceTest, openclallocate)
-{
-
-  cl::Platform platform(cl::Platform::getDefault());
-
-  std::vector<cl::Device> all_devices;
-
-  platform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
-
-  if(all_devices.size()==0){
-    std::stringstream ss;
-
-    ss << "No GPU device found!";
-
-    throw std::runtime_error
-      (ss.str());
-  }
-
- cl::Device device(all_devices[0]);
-
- cl::Context context(device);
-
- cl::CommandQueue queue(context, device);
-
-  std::unique_ptr<opencl::MemoryResource>  pResource
-    (new opencl::MemoryResource(context,queue));
-
-  std::size_t nByte(10);
-
-  void * palloc1( pResource->allocate(nByte) );
-  void * palloc2( pResource->allocate(nByte) );
-  void * palloc3( pResource->allocate(nByte) );
-
-  std::cout << *pResource << std::endl;
-
-  for(std::size_t iByte(0);iByte<nByte;++iByte) {
-    void * palloc4 (static_cast<uint8_t*>(palloc2) + iByte);
-
-    opencl::MemoryResource::DeviceBuffer::Pointer pDevice;
-    std::size_t pOffset(0);
-
-    pResource->getOpenCLBufferAndOffset
-        ( palloc4
-        , pDevice
-        , pOffset );
-
-    EXPECT_EQ(pOffset,iByte);
-  }
-
-
-  pResource->deallocate(palloc3,nByte);
-  pResource->deallocate(palloc2,nByte);
-  pResource->deallocate(palloc1,nByte);
 }
 
 }

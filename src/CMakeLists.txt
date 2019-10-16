@@ -1,28 +1,44 @@
 # Define library. Only source files here!
 project(libACE LANGUAGES CXX)
 
-find_package(OpenCL REQUIRED)
-
 #Create a library called "Hello" which includes the source file "hello.icxx".
 # The extension is already found. Any number of sources could be listed here.
-add_library ( ACE 
-	      device/Device.cpp
-	      device/MemoryResource.cpp
-	      device/Types.cpp
-	      device/opencl/Device.cpp
-	      device/opencl/MemoryResource.cpp
-	      device/opencl/Scheduler.cpp
-	      device/numa/Device.cpp
-	      device/numa/MemoryResource.cpp
-	      device/numa/Scheduler.cpp
-	      thread/Barrier.cpp
-	      thread/Exception.cpp
-	      thread/LockGuard.cpp
-	      thread/Mutex.cpp
-	      thread/Pool.cpp
-	      thread/Thread.cpp
-	      utility/LockGuard.cpp
-	      )
+set ( sources 
+	device/Device.cpp
+	device/MemoryResource.cpp
+	device/Types.cpp
+	device/numa/Device.cpp
+	device/numa/MemoryResource.cpp
+	device/numa/Scheduler.cpp
+	thread/Barrier.cpp
+	thread/Exception.cpp
+	thread/LockGuard.cpp
+	thread/Mutex.cpp
+	thread/Pool.cpp
+	thread/Thread.cpp
+	utility/LockGuard.cpp )
+
+set ( libs
+	pthread
+	numa )
+
+if(OpenCL)
+  find_package(OpenCL REQUIRED)
+
+  add_definitions(-DUSE_OPENCL)
+
+  set ( sources ${sources}
+  	device/opencl/Device.cpp
+	device/opencl/MemoryResource.cpp
+	device/opencl/Scheduler.cpp )
+
+  set ( libs ${libs}
+  	OpenCL::OpenCL )
+
+endif(OpenCL)
+
+
+add_library (ACE ${sources})
 
 # Define headers for this library. PUBLIC headers are used for
 # compiling the library, and will be added to consumers' build
@@ -32,10 +48,7 @@ target_include_directories(ACE
    	       $<INSTALL_INTERFACE:include>
    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(ACE
-	OpenCL::OpenCL
-	pthread
-	numa)
+target_link_libraries(ACE ${libs})
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
 install(TARGETS ACE EXPORT ACEConfig

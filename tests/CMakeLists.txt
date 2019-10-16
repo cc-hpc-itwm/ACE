@@ -1,12 +1,21 @@
 enable_testing()
 find_package(GTest REQUIRED)
-  
-add_executable ( run_tests
-      run_tests.cpp
-      DeviceTest.cpp
-      MemoryResourceTest.cpp
-      OpenClDeviceTest.cpp
-      )
+
+set (sources
+	run_tests.cpp
+	DeviceTest.cpp
+	MemoryResourceTest.cpp )
+
+if (OpenCL)
+
+  add_definitions (-DUSE_OPENCL)
+
+  set (sources ${sources}
+  	OpenClDeviceTest.cpp )
+
+endif (OpenCL)
+
+add_executable ( run_tests ${sources})
 
 target_include_directories (run_tests PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR} )	

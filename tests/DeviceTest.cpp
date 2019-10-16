@@ -23,7 +23,6 @@
 
 #include <ACE/device/numa/Device.hpp>
 #include <ACE/device/numa/Kernel.hpp>
-#include <ACE/device/opencl/Device.hpp>
 #include <ACE/schedule/Executor.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/task/Task.hpp>

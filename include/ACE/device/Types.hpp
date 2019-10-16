@@ -25,7 +25,6 @@
 #include <istream>
 #include <ostream>
 #include <functional>
-#include <CL/cl.hpp>
 
 namespace ace { namespace device { namespace opencl { class Kernel; } } }
 

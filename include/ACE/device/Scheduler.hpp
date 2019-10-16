@@ -34,9 +34,12 @@
 #include <ACE/device/SchedulerInterface.hpp>
 #include <ACE/device/Types.hpp>
 #include <ACE/device/numa/Scheduler.hpp>
-#include <ACE/device/opencl/Scheduler.hpp>
 #include <ACE/schedule/Schedule.hpp>
 #include <ACE/utility/Macros.hpp>
+
+#ifdef USE_OPENCL
+#include <ACE/device/opencl/Scheduler.hpp>
+#endif
 
 namespace ace {
 namespace device {
@@ -111,12 +114,17 @@ private:
           }
           case Type::OPENCL:
           {
+#ifdef USE_OPENCL
             pSchedulerCopy.reset
               ( new opencl::Scheduler<State>
                 ( dynamic_cast<const opencl::Scheduler<OtherState>&>
                  (*pScheduler)
                 )
               );
+#else
+            throw std::runtime_error
+              (CODE_ORIGIN +  "ACE has not been build with OpenCL support");
+#endif
             break;
           }
           default:
