@@ -200,8 +200,6 @@ TEST_F(DeviceTest, run)
       ( _finalState
       , _vars[iVar] );
   }
-
-  opencl::Device gpu_device(GPU,0);
 }
 
 }
