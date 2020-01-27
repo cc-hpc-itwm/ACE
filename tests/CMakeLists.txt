@@ -15,16 +15,19 @@ if (OpenCL)
 
 endif (OpenCL)
 
-add_executable ( run_tests ${sources})
+add_executable ( ACETests ${sources})
 
-target_include_directories (run_tests PRIVATE 
+target_include_directories (ACETests PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR} )	
 
-target_link_libraries( run_tests LINK_PUBLIC  
+target_link_libraries( ACETests LINK_PUBLIC  
   	GTest::GTest 
 	GTest::Main 
 	ACE 
 	pthread 
 	rt )
 
-add_test(NAME unittest COMMAND run_tests )
+add_custom_target (run_tests
+	COMMAND ACETests
+	DEPENDS ACETests
+	)
