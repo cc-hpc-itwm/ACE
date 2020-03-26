@@ -135,6 +135,23 @@ set_socket_affinity (const Id sock)
   return active_cores;
 }
 
+int
+set_socket_affinity_and_nthreads (const Id sock)
+{
+	int nthreads (set_socket_affinity(sock));
+	{
+		std::string const svar_name("ACE_NUM_NUMATHREADS");
+
+		char const * const cvar_value (std::getenv(svar_name.c_str()));
+
+		if(cvar_value != nullptr) {
+			nthreads = std::max(1, std::min(nthreads, std::atoi(cvar_value)));
+		}
+	}
+
+	return nthreads;
+}
+
 }
 
 SchedulerRuntime
@@ -142,7 +159,7 @@ SchedulerRuntime
    ( Id const & id )
 : _pThreadPool
     ( std::make_shared<thread::Pool>
-        ( detail::set_socket_affinity(id),thread::PIN_1TO1_INHERITED) )
+        ( detail::set_socket_affinity_and_nthreads(id),thread::PIN_1TO1_INHERITED) )
 { }
 
 }
